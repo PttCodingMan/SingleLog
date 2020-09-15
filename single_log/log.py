@@ -44,11 +44,6 @@ class Logger:
 
         total_message = '[' + strftime('%m%d %H%M%S') + ']'
 
-        # if current_log_level == level.DEBUG:
-        #     total_message += '[除錯]'
-        # elif current_log_level == level.INFO:
-        #     total_message += '[資訊]'
-
         if self.prefix is not None:
             total_message += '[' + self.prefix + ']'
         total_message += ' ' + msg
@@ -88,6 +83,7 @@ class Logger:
 
         self.show(current_log_level, ''.join(total_message))
 
+
 if __name__ == '__main__':
 
     test_log_level = [
@@ -98,7 +94,6 @@ if __name__ == '__main__':
     ]
 
     for current_log_level in test_log_level:
-
         logger = Logger('test prefix', current_log_level)
 
         logger.show(Logger.SILENT, 'SILENT')
@@ -111,6 +106,7 @@ if __name__ == '__main__':
     logger = Logger('test prefix', Logger.INFO)
     logger.show_value(Logger.INFO, 'Test', 123)
     logger.show_value(Logger.INFO, 'Test', [1, 2])
+
 #                        ____________
 #                       |            |
 #                       |            |
