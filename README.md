@@ -3,7 +3,7 @@
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/single_log)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/single_log)
 
-### Logger in python
+### Logger in python, 你可以在 demo.py 看到所有使用範例
 
 ## 贊助
 #### 如果這個專案對你有幫助，贊助我一杯咖啡吧!!
