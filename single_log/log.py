@@ -31,7 +31,7 @@ class Logger:
 
         return msg
 
-    def show(self, current_log_level, msg):
+    def _show(self, current_log_level, msg):
 
         if self.level > current_log_level:
             return
@@ -61,8 +61,12 @@ class Logger:
         if self.handler is not None:
             self.handler(total_message)
 
-    def show_value(self, current_log_level, des, value):
+    def show(self, current_log_level, des, value=None):
         if self.level > current_log_level:
+            return
+
+        if value is None:
+            self._show(current_log_level, des)
             return
 
         if isinstance(value, list):
@@ -81,7 +85,7 @@ class Logger:
         total_message.append(value)
         total_message.append(']')
 
-        self.show(current_log_level, ''.join(total_message))
+        self._show(current_log_level, ''.join(total_message))
 
 
 if __name__ == '__main__':

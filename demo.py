@@ -3,10 +3,10 @@ from single_log.log import Logger
 if __name__ == '__main__':
 
     logger = Logger('INFO', Logger.INFO)
-    logger.show_value(Logger.INFO, 'show int', 100)
-    logger.show_value(Logger.INFO, 'show str', 'this is a string')
-    logger.show_value(Logger.INFO, 'show int list', [101, 102, 103])
-    logger.show_value(Logger.INFO, 'show string list', ['101', '102', '103'])
+    logger.show(Logger.INFO, 'show int', 100)
+    logger.show(Logger.INFO, 'show str', 'this is a string')
+    logger.show(Logger.INFO, 'show int list', [101, 102, 103])
+    logger.show(Logger.INFO, 'show string list', ['101', '102', '103'])
 
     print('=' * 20)
 
@@ -50,4 +50,4 @@ if __name__ == '__main__':
 
     logger.show(Logger.INFO, '1')
     logger.show(Logger.INFO, 2)
-    logger.show_value(Logger.INFO, 'show value', 456)
+    logger.show(Logger.INFO, 'show value', 456)
