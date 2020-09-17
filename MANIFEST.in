@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+
+exclude setup.py
+
+# Include the data files
+recursive-include single_log *
