@@ -25,7 +25,7 @@ class Logger:
                         i != len(msg) - 1):
                     msg[i] = msg[i].rstrip() + ' '
 
-            msg = ''.join(msg)
+            msg = ' '.join(msg)
         msg = str(msg)
         msg = msg.replace('  ', ' ')
 
