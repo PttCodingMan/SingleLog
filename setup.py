@@ -3,7 +3,6 @@
 # https://packaging.python.org/en/latest/distributing.html
 # https://github.com/pypa/sampleproject
 
-# Always prefer setuptools over distlib_utils
 from setuptools import setup
 
 long_description = '''signle log is the logger developed by CodingMan'''
