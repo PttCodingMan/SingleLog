@@ -1,4 +1,4 @@
-from single_log.log import Logger
+from SingleLog.log import Logger
 
 if __name__ == '__main__':
 

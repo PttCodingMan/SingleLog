@@ -25,7 +25,7 @@ setup(
     # There are some restrictions on what makes a valid project name
     # specification here:
     # https://packaging.python.org/specifications/core-metadata/#name
-    name='single_log',  # Required
+    name='SingleLog',  # Required
 
     # Versions should comply with PEP 440:
     # https://www.python.org/dev/peps/pep-0440/
@@ -33,12 +33,12 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.3',  # Required
+    version='1.0.5',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description='single-log\ngithub: https://github.com/PttCodingMan/https://github.com/PttCodingMan/single-log',  # Required
+    description='SingleLog\ngithub: https://github.com/PttCodingMan/SingleLog',  # Required
 
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.
@@ -54,7 +54,7 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url='https://github.com/PttCodingMan/py_single-logger',  # Optional
+    url='https://github.com/PttCodingMan/SingleLog',  # Optional
 
     # This should be your name or the name of the organization which owns the
     # project.
@@ -99,7 +99,7 @@ setup(
     #
     # py_modules=["PTTLibrary.py"],
     #
-    packages=['single_log'],  # Required
+    packages=['SingleLog'],  # Required
 
     # package_dir={'PTTLibrary': 'PTT'},
     # This field lists other packages that your project depends on to run.
