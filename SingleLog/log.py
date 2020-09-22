@@ -76,8 +76,6 @@ class Logger:
         value = self.merge(value)
         if len(msg) == 0:
             return
-        # if len(Value) == 0:
-        #     return
 
         total_message = []
         total_message.append(msg)
