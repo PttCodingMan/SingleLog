@@ -8,6 +8,8 @@ if __name__ == '__main__':
     logger.show(Logger.INFO, 'show int list', [101, 102, 103])
     logger.show(Logger.INFO, 'show string list', ['101', '102', '103'])
 
+    logger.show(Logger.INFO, 'des', 'value0', 'value1')
+
     print('=' * 20)
 
     logger = Logger('TRACE', Logger.TRACE)

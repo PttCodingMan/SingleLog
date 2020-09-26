@@ -61,27 +61,40 @@ class Logger:
         if self.handler is not None:
             self.handler(total_message)
 
-    def show(self, current_log_level, des, value=None):
+    def show(self, current_log_level, des, value_0=None, value_1=None):
         if self.level > current_log_level:
             return
 
-        if value is None:
+        if value_0 is None:
             self._show(current_log_level, des)
             return
 
-        if isinstance(value, list):
-            value = value.copy()
+        if isinstance(value_0, list):
+            value_0 = value_0.copy()
+
+        if value_1 is not None and isinstance(value_1, list):
+            value_1 = value_1.copy()
 
         msg = self.merge(des)
-        value = self.merge(value)
+        value_0 = self.merge(value_0)
+
+        if value_1 is not None:
+            value_1 = self.merge(value_1)
+
         if len(msg) == 0:
             return
 
         total_message = []
         total_message.append(msg)
         total_message.append(' [')
-        total_message.append(value)
+        total_message.append(value_0)
         total_message.append(']')
+
+        if value_1 is not None:
+            total_message.append(' [')
+            total_message.append(value_1)
+            total_message.append(']')
+
 
         self._show(current_log_level, ''.join(total_message))
 
