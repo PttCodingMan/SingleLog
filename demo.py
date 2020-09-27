@@ -1,14 +1,15 @@
 from SingleLog.log import Logger
 
 if __name__ == '__main__':
-
     logger = Logger('INFO', Logger.INFO)
+
+    logger.show('1', 2, 3, 4, 5)
     logger.show(Logger.INFO, 'show int', 100)
     logger.show(Logger.INFO, 'show str', 'this is a string')
     logger.show(Logger.INFO, 'show int list', [101, 102, 103])
     logger.show(Logger.INFO, 'show string list', ['101', '102', '103'])
 
-    logger.show(Logger.INFO, 'des', 'value0', 'value1')
+    logger.show(Logger.INFO, 'des', 'value0', 'value1', 'value2')
 
     print('=' * 20)
 
@@ -44,9 +45,11 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
+
     def log_to_file(msg):
         with open('single_log.txt', 'a', encoding='utf8') as f:
             f.write(f'{msg}\n')
+
 
     logger = Logger('INFO', Logger.INFO, handler=log_to_file)
 

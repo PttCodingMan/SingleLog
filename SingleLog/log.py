@@ -61,40 +61,31 @@ class Logger:
         if self.handler is not None:
             self.handler(total_message)
 
-    def show(self, current_log_level, des, value_0=None, value_1=None):
-        if self.level > current_log_level:
-            return
-
-        if value_0 is None:
-            self._show(current_log_level, des)
-            return
-
-        if isinstance(value_0, list):
-            value_0 = value_0.copy()
-
-        if value_1 is not None and isinstance(value_1, list):
-            value_1 = value_1.copy()
-
-        msg = self.merge(des)
-        value_0 = self.merge(value_0)
-
-        if value_1 is not None:
-            value_1 = self.merge(value_1)
+    def show(self, *msg):
 
         if len(msg) == 0:
             return
 
-        total_message = []
-        total_message.append(msg)
-        total_message.append(' [')
-        total_message.append(value_0)
-        total_message.append(']')
+        if isinstance(msg[0], int):
+            current_log_level = msg[0]
+            msg = msg[1:]
+        else:
+            current_log_level = self.INFO
 
-        if value_1 is not None:
-            total_message.append(' [')
-            total_message.append(value_1)
-            total_message.append(']')
+        if self.level > current_log_level:
+            return
 
+        for i in range(len(msg)):
+            if isinstance(msg[i], list):
+                msg = msg[i].copy()
+
+        des = self.merge(msg[0])
+        if len(msg) == 0:
+            return
+        msg = msg[1:]
+
+        total_message = [f' [{self.merge(x)}]' for x in msg]
+        total_message.insert(0, des)
 
         self._show(current_log_level, ''.join(total_message))
 
@@ -119,8 +110,8 @@ if __name__ == '__main__':
         print('=================')
 
     logger = Logger('test prefix', Logger.INFO)
-    logger.show_value(Logger.INFO, 'Test', 123)
-    logger.show_value(Logger.INFO, 'Test', [1, 2])
+    logger.show(Logger.INFO, 'Test', 123)
+    logger.show(Logger.INFO, 'Test', [1, 2])
 
 #                        ____________
 #                       |            |
