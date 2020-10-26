@@ -56,3 +56,21 @@ if __name__ == '__main__':
     logger.show(Logger.INFO, '1')
     logger.show(Logger.INFO, 2)
     logger.show(Logger.INFO, 'show value', 456)
+
+    import threading
+
+
+    def thread_log(thread_id):
+        current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
+        for i in range(1000):
+            current_logger.show(Logger.INFO, 'show', i)
+
+
+    thread_list = list()
+    for i in range(100):
+        t = threading.Thread(target=thread_log, args=(i,))
+        thread_list.append(t)
+        t.start()
+
+    for t in thread_list:
+        t.join()
