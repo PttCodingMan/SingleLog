@@ -1,5 +1,8 @@
 import sys
 from time import strftime
+import threading
+
+global_lock = threading.Lock()
 
 
 class Logger:
@@ -49,6 +52,7 @@ class Logger:
         total_message += ' ' + msg
 
         try:
+            global_lock.acquire()
             print(total_message.encode(
                 sys.stdin.encoding,
                 'replace'
@@ -57,6 +61,8 @@ class Logger:
             ))
         except Exception:
             print(total_message.encode('utf-8', "replace").decode('utf-8'))
+        finally:
+            global_lock.release()
 
         if self.handler is not None:
             self.handler(total_message)
