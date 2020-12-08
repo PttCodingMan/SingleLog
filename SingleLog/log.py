@@ -16,21 +16,10 @@ class Logger:
         self.level = level
         self.handler = handler
 
-    def merge(self, msg) -> str:
+    def _merge(self, msg) -> str:
         if isinstance(msg, list):
-            msg = list(map(str, msg))
-            for i in range(len(msg)):
-                if len(msg[i]) == 0:
-                    continue
-                if msg[i][0].upper() != msg[i][0].lower() and i != 0:
-                    msg[i] = ' ' + msg[i].lstrip()
-                if (msg[i][-1].upper() != msg[i][-1].lower() and
-                        i != len(msg) - 1):
-                    msg[i] = msg[i].rstrip() + ' '
-
-            msg = ' '.join(msg)
+            msg = ' '.join([str(x).strip() for x in msg])
         msg = str(msg)
-        msg = msg.replace('  ', ' ')
 
         return msg
 
@@ -43,7 +32,7 @@ class Logger:
         if not isinstance(msg, int) and len(msg) == 0:
             return
 
-        msg = self.merge(msg)
+        msg = self._merge(msg)
 
         total_message = '[' + strftime('%m%d %H%M%S') + ']'
 
@@ -51,18 +40,16 @@ class Logger:
             total_message += '[' + self.prefix + ']'
         total_message += ' ' + msg
 
-        try:
-            global_lock.acquire()
-            print(total_message.encode(
-                sys.stdin.encoding,
-                'replace'
-            ).decode(
-                sys.stdin.encoding
-            ))
-        except Exception:
-            print(total_message.encode('utf-8', "replace").decode('utf-8'))
-        finally:
-            global_lock.release()
+        with global_lock:
+            try:
+                print(total_message.encode(
+                    sys.stdin.encoding,
+                    'replace'
+                ).decode(
+                    sys.stdin.encoding
+                ))
+            except Exception:
+                print(total_message.encode('utf-8', "replace").decode('utf-8'))
 
         if self.handler is not None:
             self.handler(total_message)
@@ -85,12 +72,12 @@ class Logger:
             if isinstance(msg[i], list):
                 msg = msg[i].copy()
 
-        des = self.merge(msg[0])
+        des = self._merge(msg[0])
         if len(msg) == 0:
             return
         msg = msg[1:]
 
-        total_message = [f' [{self.merge(x)}]' for x in msg]
+        total_message = [f' [{self._merge(x)}]' for x in msg]
         total_message.insert(0, des)
 
         self._show(current_log_level, ''.join(total_message))
