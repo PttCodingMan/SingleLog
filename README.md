@@ -5,6 +5,11 @@
 
 ### 超簡單易用的 python logger, 你可以在 demo.py 看到所有使用範例
 
+## 安裝
+```
+pip install SingleLog
+```
+
 ## 贊助
 #### 如果這個專案對你有幫助，贊助我一杯咖啡吧!!
 ####
