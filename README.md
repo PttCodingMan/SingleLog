@@ -9,11 +9,3 @@
 ```
 pip install SingleLog
 ```
-
-## 贊助
-#### 如果這個專案對你有幫助，贊助我一杯咖啡吧!!
-####
-#### [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](http://paypal.me/CodingMan)
-####
-#### XMR
-##### 448CUe2q4Ecf9tx6rwanrqM9kfCwqpNbhJ5jtrTf9FHqHNq7Lvv9uBoQ74SEaAu9FFceNBr6p3W1yhqPcxPPSSTv2ctufnQ
