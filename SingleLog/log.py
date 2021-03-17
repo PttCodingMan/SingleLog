@@ -59,6 +59,8 @@ class Logger:
         if len(msg) == 0:
             return
 
+        msg = list(msg)
+
         if isinstance(msg[0], int):
             current_log_level = msg[0]
             msg = msg[1:]
@@ -70,7 +72,7 @@ class Logger:
 
         for i in range(len(msg)):
             if isinstance(msg[i], list):
-                msg = msg[i].copy()
+                msg[i] = msg[i].copy()
 
         des = self._merge(msg[0])
         if len(msg) == 0:
