@@ -5,108 +5,71 @@ import threading
 global_lock = threading.Lock()
 
 
+def _merge(msg) -> str:
+    if isinstance(msg, list):
+        msg = f'[{" ".join([str(x).strip() for x in msg])}]'
+    elif isinstance(msg, tuple):
+        msg = f'({" ".join([str(x).strip() for x in msg])})'
+    else:
+        msg = f'[{str(msg)}]'
+
+    return msg
+
+
 class Logger:
     TRACE = 1
     DEBUG = 2
     INFO = 3
     SILENT = 4
 
+    MIN_VALUE = TRACE
+    MAX_VALUE = SILENT
+
     def __init__(self, prefix, level, handler=None):
         self.prefix = prefix
+
+        if not (self.MIN_VALUE <= level <= self.MAX_VALUE):
+            raise ValueError('Log level error')
         self.level = level
+        if handler is not None and not callable(handler):
+            raise TypeError('Handler must is callable!!')
         self.handler = handler
-
-    def _merge(self, msg) -> str:
-        if isinstance(msg, list):
-            msg = ' '.join([str(x).strip() for x in msg])
-        msg = str(msg)
-
-        return msg
-
-    def _show(self, current_log_level, msg):
-
-        if self.level > current_log_level:
-            return
-        if current_log_level == self.SILENT:
-            return
-        if not isinstance(msg, int) and len(msg) == 0:
-            return
-
-        msg = self._merge(msg)
-
-        total_message = '[' + strftime('%m%d %H%M%S') + ']'
-
-        if self.prefix is not None:
-            total_message += '[' + self.prefix + ']'
-        total_message += ' ' + msg
-
-        with global_lock:
-            try:
-                print(total_message.encode(
-                    sys.stdin.encoding,
-                    'replace'
-                ).decode(
-                    sys.stdin.encoding
-                ))
-            except Exception:
-                print(total_message.encode('utf-8', "replace").decode('utf-8'))
-
-        if self.handler is not None:
-            self.handler(total_message)
 
     def show(self, *msg):
 
         if len(msg) == 0:
             return
 
-        msg = list(msg)
-
         if isinstance(msg[0], int):
-            current_log_level = msg[0]
+            log_level = msg[0]
             msg = msg[1:]
         else:
-            current_log_level = self.INFO
+            log_level = self.INFO
 
-        if self.level > current_log_level:
+        if self.level > log_level:
             return
 
-        for i in range(len(msg)):
-            if isinstance(msg[i], list):
-                msg[i] = msg[i].copy()
-
-        des = self._merge(msg[0])
-        if len(msg) == 0:
+        if log_level == self.SILENT:
             return
+        if not isinstance(msg, int) and len(msg) == 0:
+            return
+
+        des = msg[0]
         msg = msg[1:]
 
-        total_message = [f' [{self._merge(x)}]' for x in msg]
-        total_message.insert(0, des)
+        msg = [f' {_merge(x)}' for x in msg]
+        msg.insert(0, des)
 
-        self._show(current_log_level, ''.join(total_message))
+        total_message = '[' + strftime('%Y%m%d %H:%M:%S') + ']'
+        if self.prefix is not None:
+            total_message += '[' + self.prefix + ']'
+        total_message += ' ' + ''.join(msg)
 
+        with global_lock:
+            print(total_message)
 
-if __name__ == '__main__':
-
-    test_log_level = [
-        Logger.SILENT,
-        Logger.INFO,
-        Logger.DEBUG,
-        Logger.TRACE
-    ]
-
-    for current_log_level in test_log_level:
-        logger = Logger('test prefix', current_log_level)
-
-        logger.show(Logger.SILENT, 'SILENT')
-        logger.show(Logger.INFO, 'INFO')
-        logger.show(Logger.DEBUG, 'DEBUG')
-        logger.show(Logger.TRACE, 'TRACE')
-
-        print('=================')
-
-    logger = Logger('test prefix', Logger.INFO)
-    logger.show(Logger.INFO, 'Test', 123)
-    logger.show(Logger.INFO, 'Test', [1, 2])
+        if self.handler is not None:
+            self.handler(total_message)
 
 #                        ____________
 #                       |            |
