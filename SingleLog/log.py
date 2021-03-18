@@ -51,19 +51,19 @@ class Logger:
 
         if log_level == self.SILENT:
             return
-        if not isinstance(msg, int) and len(msg) == 0:
+        if len(msg) == 0:
             return
 
-        des = msg[0]
+        des = str(msg[0])
         msg = msg[1:]
 
         msg = [f' {_merge(x)}' for x in msg]
         msg.insert(0, des)
 
-        total_message = '[' + strftime('%Y%m%d %H:%M:%S') + ']'
-        if self.prefix is not None:
-            total_message += '[' + self.prefix + ']'
-        total_message += ' ' + ''.join(msg)
+        if self.prefix is None:
+            total_message = f'[{strftime("%Y%m%d %H:%M:%S")}] {"".join(msg)}'
+        else:
+            total_message = f'[{strftime("%Y%m%d %H:%M:%S")}][{self.prefix}] {"".join(msg)}'
 
         with global_lock:
             print(total_message)
