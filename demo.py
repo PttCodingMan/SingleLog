@@ -16,36 +16,42 @@ if __name__ == '__main__':
 
     logger = Logger('TRACE', Logger.TRACE)
 
-    logger.show(Logger.INFO, 'It should be print')
-    logger.show(Logger.DEBUG, 'It should be print')
-    logger.show(Logger.TRACE, 'It should be print')
+    logger.show(Logger.INFO, 'This should be print')
+    logger.show(Logger.DEBUG, 'This should be print')
+    logger.show(Logger.TRACE, 'This should be print')
 
     print('=' * 20)
 
     logger = Logger('DEBUG', Logger.DEBUG)
 
-    logger.show(Logger.INFO, 'It should be print')
-    logger.show(Logger.DEBUG, 'It should be print')
-    logger.show(Logger.TRACE, 'It should NOT be print')
+    logger.show(Logger.INFO, 'This should be print')
+    logger.show(Logger.DEBUG, 'This should be print')
+    logger.show(Logger.TRACE, 'This should NOT be print')
 
     print('=' * 20)
 
     logger = Logger('INFO', Logger.INFO)
 
-    logger.show(Logger.INFO, 'It should be print')
-    logger.show(Logger.DEBUG, 'It should NOT be print')
-    logger.show(Logger.TRACE, 'It should NOT be print')
+    logger.show(Logger.INFO, 'This should be print')
+    logger.show(Logger.DEBUG, 'This should NOT be print')
+    logger.show(Logger.TRACE, 'This should NOT be print')
 
     print('=' * 20)
 
     logger = Logger('SILENT', Logger.SILENT)
 
-    logger.show(Logger.INFO, 'It should NOT be print')
-    logger.show(Logger.DEBUG, 'It should NOT be print')
-    logger.show(Logger.TRACE, 'It should NOT be print')
+    logger.show(Logger.INFO, 'This should NOT be print')
+    logger.show(Logger.DEBUG, 'This should NOT be print')
+    logger.show(Logger.TRACE, 'This should NOT be print')
 
     print('=' * 20)
 
+    logger = Logger('skip', Logger.INFO, skip_repeat=True)
+    logger.show('This should only print once')
+    logger.show('This should only print once')
+    logger.show('This should only print once')
+
+    print('=' * 20)
 
     def log_to_file(msg):
         with open('single_log.txt', 'a', encoding='utf8') as f:

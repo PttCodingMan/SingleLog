@@ -25,7 +25,7 @@ class Logger:
     MIN_VALUE = TRACE
     MAX_VALUE = SILENT
 
-    def __init__(self, prefix, level, handler=None):
+    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False):
         self.prefix = prefix
 
         if not (self.MIN_VALUE <= level <= self.MAX_VALUE):
@@ -34,8 +34,14 @@ class Logger:
         if handler is not None and not callable(handler):
             raise TypeError('Handler must is callable!!')
         self.handler = handler
+        self.skip_repeat = skip_repeat
+        self.last_msg = None
 
     def show(self, *msg):
+
+        if self.last_msg == msg:
+            return
+        self.last_msg = msg
 
         if len(msg) == 0:
             return
