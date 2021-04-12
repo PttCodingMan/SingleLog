@@ -3,53 +3,54 @@ from SingleLog.log import Logger
 if __name__ == '__main__':
     logger = Logger('INFO', Logger.INFO)
 
-    logger.show('1', 2, 3, 4, 5)
-    logger.show(Logger.INFO, 'show int', 100)
-    logger.show(Logger.INFO, 'show str', 'this is a string')
-    logger.show(Logger.INFO, 'show int list', [101, 102, 103])
-    logger.show(Logger.INFO, 'show string list', ['101', '102', '103'])
-    logger.show(Logger.INFO, 'show tuple', ('12', '14', '16'))
+    logger.info(1)
+    logger.info(1, 2, 3, 4, 5)
+    logger.info('show int', 100)
+    logger.info('show str', 'this is a string')
+    logger.info('show int list', [101, 102, 103])
+    logger.info('show string list', ['101', '102', '103'])
+    logger.info('show tuple', ('12', '14', '16'))
 
-    logger.show(Logger.INFO, 'des', 'value0', 'value1', 'value2')
+    logger.info('des', 'value0', 'value1', 'value2')
 
     print('=' * 20)
 
     logger = Logger('TRACE', Logger.TRACE)
 
-    logger.show(Logger.INFO, 'This should be print')
-    logger.show(Logger.DEBUG, 'This should be print')
-    logger.show(Logger.TRACE, 'This should be print')
+    logger.info('This should be 3 to print')
+    logger.debug('This should be 3 to print')
+    logger.trace('This should be 3 to print')
 
     print('=' * 20)
 
     logger = Logger('DEBUG', Logger.DEBUG)
 
-    logger.show(Logger.INFO, 'This should be print')
-    logger.show(Logger.DEBUG, 'This should be print')
-    logger.show(Logger.TRACE, 'This should NOT be print')
+    logger.info('This should be 2 to print')
+    logger.debug('This should be 2 to print')
+    logger.trace('This should NOT be print')
 
     print('=' * 20)
 
     logger = Logger('INFO', Logger.INFO)
 
-    logger.show(Logger.INFO, 'This should be print')
-    logger.show(Logger.DEBUG, 'This should NOT be print')
-    logger.show(Logger.TRACE, 'This should NOT be print')
+    logger.info('This should be 1 to print')
+    logger.debug('This should NOT be print')
+    logger.trace('This should NOT be print')
 
     print('=' * 20)
 
     logger = Logger('SILENT', Logger.SILENT)
 
-    logger.show(Logger.INFO, 'This should NOT be print')
-    logger.show(Logger.DEBUG, 'This should NOT be print')
-    logger.show(Logger.TRACE, 'This should NOT be print')
+    logger.info('This should NOT be print')
+    logger.debug('This should NOT be print')
+    logger.trace('This should NOT be print')
 
     print('=' * 20)
 
     logger = Logger('skip', Logger.INFO, skip_repeat=True)
-    logger.show('This should only print once')
-    logger.show('This should only print once')
-    logger.show('This should only print once')
+    logger.info('This should only print once')
+    logger.info('This should only print once')
+    logger.info('This should only print once')
 
     print('=' * 20)
 
@@ -60,9 +61,9 @@ if __name__ == '__main__':
 
     logger = Logger('INFO', Logger.INFO, handler=log_to_file)
 
-    logger.show(Logger.INFO, '1')
-    logger.show(Logger.INFO, 2)
-    logger.show(Logger.INFO, 'show value', 456)
+    logger.info('1')
+    logger.info(2)
+    logger.info('show value', 456)
 
     import threading
 
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     def thread_log(thread_id):
         current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
         for i in range(1000):
-            current_logger.show(Logger.INFO, 'show', i)
+            current_logger.info('show', i)
 
 
     thread_list = list()

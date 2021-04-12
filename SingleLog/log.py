@@ -37,26 +37,28 @@ class Logger:
         self.skip_repeat = skip_repeat
         self.last_msg = None
 
-    def show(self, *msg):
+    def info(self, *msg):
+        self._show(Logger.INFO, *msg)
 
-        if self.last_msg == msg:
-            return
-        self.last_msg = msg
+    def debug(self, *msg):
+        self._show(Logger.DEBUG, *msg)
+
+    def trace(self, *msg):
+        self._show(Logger.TRACE, *msg)
+
+    def _show(self, log_level, *msg):
+
+        if self.skip_repeat:
+            if self.last_msg == msg:
+                return
+            self.last_msg = msg
 
         if len(msg) == 0:
             return
 
-        if isinstance(msg[0], int):
-            log_level = msg[0]
-            msg = msg[1:]
-        else:
-            log_level = self.INFO
-
         if self.level > log_level:
             return
 
-        if log_level == self.SILENT:
-            return
         if len(msg) == 0:
             return
 
