@@ -3,6 +3,7 @@ from SingleLog.log import Logger
 if __name__ == '__main__':
     logger = Logger('INFO', Logger.INFO)
 
+    logger.info('data', {'1': 'value1', '2': 'value2'})
     logger.info(1)
     logger.info(1, 2, 3, 4, 5)
     logger.info('show int', 100)

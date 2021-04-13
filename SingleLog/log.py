@@ -1,4 +1,4 @@
-import sys
+import json
 from time import strftime
 import threading
 
@@ -10,6 +10,8 @@ def _merge(msg) -> str:
         msg = f'[{" ".join([str(x).strip() for x in msg])}]'
     elif isinstance(msg, tuple):
         msg = f'({" ".join([str(x).strip() for x in msg])})'
+    elif isinstance(msg, dict):
+        msg = f'\n{json.dumps(msg, indent=2)}'
     else:
         msg = f'[{str(msg)}]'
 
