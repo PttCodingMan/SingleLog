@@ -18,20 +18,54 @@ def _merge(msg) -> str:
     return msg
 
 
-class Logger:
+class LoggerLevel:
     TRACE = 1
     DEBUG = 2
     INFO = 3
     SILENT = 4
 
-    MIN_VALUE = TRACE
-    MAX_VALUE = SILENT
+    group = [TRACE, DEBUG, INFO, SILENT]
+
+    def __init__(self, level):
+        if level not in self.group:
+            raise ValueError(f'log level error: {level}')
+        self.value = level
+
+    def __lt__(self, other):
+        return self.value < other.value
+
+    def __le__(self, other):
+        return self.value <= other.value
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return self.value != other.value
+
+    def __gt__(self, other):
+        return self.value > other.value
+
+    def __ge__(self, other):
+        return self.value >= other.value
+
+
+class Logger:
+    TRACE = LoggerLevel(LoggerLevel.TRACE)
+    DEBUG = LoggerLevel(LoggerLevel.DEBUG)
+    INFO = LoggerLevel(LoggerLevel.INFO)
+    SILENT = LoggerLevel(LoggerLevel.SILENT)
+
+    group = [TRACE, DEBUG, INFO, SILENT]
 
     def __init__(self, prefix, level, handler=None, skip_repeat: bool = False):
         self.prefix = prefix
 
-        if not (self.MIN_VALUE <= level <= self.MAX_VALUE):
+        if not isinstance(level, LoggerLevel):
+            raise TypeError(f'Error log level type: {type(level)}')
+        if level not in self.group:
             raise ValueError('Log level error')
+
         self.level = level
         if handler is not None and not callable(handler):
             raise TypeError('Handler must is callable!!')
@@ -40,15 +74,15 @@ class Logger:
         self.last_msg = None
 
     def info(self, *msg):
-        self._show(Logger.INFO, *msg)
+        self.log(Logger.INFO, *msg)
 
     def debug(self, *msg):
-        self._show(Logger.DEBUG, *msg)
+        self.log(Logger.DEBUG, *msg)
 
     def trace(self, *msg):
-        self._show(Logger.TRACE, *msg)
+        self.log(Logger.TRACE, *msg)
 
-    def _show(self, log_level, *msg):
+    def log(self, log_level: LoggerLevel, *msg):
 
         if self.skip_repeat:
             if self.last_msg == msg:
@@ -57,6 +91,9 @@ class Logger:
 
         if len(msg) == 0:
             return
+
+        if log_level not in self.group:
+            raise ValueError('Log level error')
 
         if self.level > log_level:
             return

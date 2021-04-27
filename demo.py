@@ -11,6 +11,7 @@ if __name__ == '__main__':
     logger.info('show int list', [101, 102, 103])
     logger.info('show string list', ['101', '102', '103'])
     logger.info('show tuple', ('12', '14', '16'))
+    logger.log(Logger.INFO, 'TEST')
 
     logger.info('des', 'value0', 'value1', 'value2')
 
@@ -55,31 +56,31 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    def log_to_file(msg):
-        with open('single_log.txt', 'a', encoding='utf8') as f:
-            f.write(f'{msg}\n')
+    # def log_to_file(msg):
+    #     with open('single_log.txt', 'a', encoding='utf8') as f:
+    #         f.write(f'{msg}\n')
+    #
+    #
+    # logger = Logger('INFO', Logger.INFO, handler=log_to_file)
+    #
+    # logger.info('1')
+    # logger.info(2)
+    # logger.info('show value', 456)
+    #
+    # import threading
+    #
+    #
+    # def thread_log(thread_id):
+    #     current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
+    #     for i in range(1000):
+    #         current_logger.info('show', i)
 
 
-    logger = Logger('INFO', Logger.INFO, handler=log_to_file)
-
-    logger.info('1')
-    logger.info(2)
-    logger.info('show value', 456)
-
-    import threading
-
-
-    def thread_log(thread_id):
-        current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
-        for i in range(1000):
-            current_logger.info('show', i)
-
-
-    thread_list = list()
-    for i in range(100):
-        t = threading.Thread(target=thread_log, args=(i,))
-        thread_list.append(t)
-        t.start()
-
-    for t in thread_list:
-        t.join()
+    # thread_list = list()
+    # for i in range(100):
+    #     t = threading.Thread(target=thread_log, args=(i,))
+    #     thread_list.append(t)
+    #     t.start()
+    #
+    # for t in thread_list:
+    #     t.join()
