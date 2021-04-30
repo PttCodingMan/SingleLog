@@ -112,11 +112,11 @@ class Logger:
         else:
             total_message = f'[{strftime("%Y%m%d %H:%M:%S")}][{self.prefix}] {"".join(msg)}'
 
-        with global_lock:
-            print(total_message)
-
         if self.handler is not None:
             self.handler(total_message)
+
+        with global_lock:
+            print(total_message)
 
 #                        ____________
 #                       |            |
