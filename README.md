@@ -15,6 +15,8 @@ pip install SingleLog
 ```python
 prefix = 'example'
 log_level = Logger.INFO
+# log_level = Logger.DEBUG
+# log_level = Logger.TRACE
 logger = Logger(prefix, log_level)
 ```
 ### Display
