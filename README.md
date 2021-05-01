@@ -88,4 +88,4 @@ logger.info(2)
 logger.info('show value', 456)
 ```
 In this example, the log message will display on the screen.  
-Algo you can find it in local file.
+Also you can find it in local file.
