@@ -1,4 +1,5 @@
 from SingleLog.log import Logger
+from SingleLog.log import LoggerLevel
 
 if __name__ == '__main__':
     logger = Logger('INFO', Logger.INFO)
