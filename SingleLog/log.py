@@ -18,15 +18,6 @@ def _merge(msg) -> str:
     return msg
 
 
-def check_instance(func):
-    def wrapper(*args, **kwargs):
-        if not isinstance(args[1], LoggerLevel):
-            raise TypeError('LoggerLevel must compare with LoggerLevel')
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 class LoggerLevel:
     TRACE = 1
     DEBUG = 2
@@ -40,28 +31,34 @@ class LoggerLevel:
             raise ValueError(f'log level error: {level}')
         self.value = level
 
-    @check_instance
     def __lt__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value < other.value
 
-    @check_instance
     def __le__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value <= other.value
 
-    @check_instance
     def __eq__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value == other.value
 
-    @check_instance
     def __ne__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value != other.value
 
-    @check_instance
     def __gt__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value > other.value
 
-    @check_instance
     def __ge__(self, other):
+        if not isinstance(other, LoggerLevel):
+            return False
         return self.value >= other.value
 
 
