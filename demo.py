@@ -57,8 +57,11 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('no timestamp', Logger.INFO, need_timestamp=False)
-    logger.info('This should no timestamp')
+    logger = Logger('custom timestamp', Logger.INFO, timestamp="%H:%M:%S")
+    logger.info('This should show custom timestamp')
+
+    logger = Logger('no timestamp', Logger.INFO, timestamp=None)
+    logger.info('This should show no timestamp')
 
     print('=' * 20)
 

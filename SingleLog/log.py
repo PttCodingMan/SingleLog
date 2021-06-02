@@ -70,7 +70,7 @@ class Logger:
 
     group = [TRACE, DEBUG, INFO, SILENT]
 
-    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False, need_timestamp: bool = True):
+    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False, timestamp: str = "%Y%m%d %H:%M:%S"):
         self.prefix = prefix
         if not self.prefix:
             self.prefix = ''
@@ -88,7 +88,7 @@ class Logger:
         self.handler = handler
         self.skip_repeat = skip_repeat
         self.last_msg = None
-        self.need_timestamp = need_timestamp
+        self.timestamp = timestamp
 
     def info(self, *msg):
         self.log(Logger.INFO, *msg)
@@ -125,8 +125,8 @@ class Logger:
         msg.insert(0, des)
 
         timestamp = ''
-        if self.need_timestamp:
-            timestamp = f'[{strftime("%Y%m%d %H:%M:%S")}]'
+        if self.timestamp:
+            timestamp = f'[{strftime(self.timestamp)}]'
 
         total_message = f'{timestamp}{self.prefix} {"".join(msg)}'.strip()
 
