@@ -57,6 +57,16 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
+    logger = Logger('no timestamp', Logger.INFO, need_timestamp=False)
+    logger.info('This should no timestamp')
+
+    print('=' * 20)
+
+    logger = Logger(None, Logger.INFO)
+    logger.info('This should no prefix')
+
+    print('=' * 20)
+
     # def log_to_file(msg):
     #     with open('single_log.txt', 'a', encoding='utf8') as f:
     #         f.write(f'{msg}\n')
@@ -75,8 +85,8 @@ if __name__ == '__main__':
     #     current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
     #     for i in range(1000):
     #         current_logger.info('show', i)
-
-
+    #
+    #
     # thread_list = list()
     # for i in range(100):
     #     t = threading.Thread(target=thread_log, args=(i,))

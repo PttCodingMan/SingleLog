@@ -70,8 +70,12 @@ class Logger:
 
     group = [TRACE, DEBUG, INFO, SILENT]
 
-    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False):
+    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False, need_timestamp: bool = True):
         self.prefix = prefix
+        if not self.prefix:
+            self.prefix = ''
+        else:
+            self.prefix = f'[{self.prefix}]'
 
         if not isinstance(level, LoggerLevel):
             raise TypeError(f'Error log level type: {type(level)}')
@@ -84,6 +88,7 @@ class Logger:
         self.handler = handler
         self.skip_repeat = skip_repeat
         self.last_msg = None
+        self.need_timestamp = need_timestamp
 
     def info(self, *msg):
         self.log(Logger.INFO, *msg)
@@ -119,10 +124,11 @@ class Logger:
         msg = [f' {_merge(x)}' for x in msg]
         msg.insert(0, des)
 
-        if self.prefix is None:
-            total_message = f'[{strftime("%Y%m%d %H:%M:%S")}] {"".join(msg)}'
-        else:
-            total_message = f'[{strftime("%Y%m%d %H:%M:%S")}][{self.prefix}] {"".join(msg)}'
+        timestamp = ''
+        if self.need_timestamp:
+            timestamp = f'[{strftime("%Y%m%d %H:%M:%S")}]'
+
+        total_message = f'{timestamp}{self.prefix} {"".join(msg)}'.strip()
 
         if self.handler is not None:
             self.handler(total_message)
