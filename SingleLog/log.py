@@ -83,7 +83,7 @@ class Logger:
             raise ValueError('Log level error')
 
         self.level = level
-        if handler is not None and not callable(handler):
+        if handler and not callable(handler):
             raise TypeError('Handler must is callable!!')
         self.handler = handler
         self.skip_repeat = skip_repeat
@@ -130,7 +130,7 @@ class Logger:
 
         total_message = f'{timestamp}{self.prefix} {"".join(msg)}'.strip()
 
-        if self.handler is not None:
+        if self.handler:
             self.handler(total_message)
 
         with global_lock:
