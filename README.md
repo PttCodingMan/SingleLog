@@ -1,4 +1,4 @@
-# logger
+# SingleLog
 [![Package Version](https://img.shields.io/pypi/v/SingleLog.svg)](https://pypi.python.org/pypi/SingleLog)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/SingleLog)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
