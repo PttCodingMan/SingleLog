@@ -68,7 +68,7 @@ class Logger:
     INFO = LoggerLevel(LoggerLevel.INFO)
     SILENT = LoggerLevel(LoggerLevel.SILENT)
 
-    group = [TRACE, DEBUG, INFO, SILENT]
+    log_level_list = [TRACE, DEBUG, INFO, SILENT]
 
     def __init__(self, prefix, level, handler=None, skip_repeat: bool = False, timestamp: str = "%Y%m%d %H:%M:%S"):
         self.prefix = prefix
@@ -79,16 +79,17 @@ class Logger:
 
         if not isinstance(level, LoggerLevel):
             raise TypeError(f'Error log level type: {type(level)}')
-        if level not in self.group:
+        if level not in self.log_level_list:
             raise ValueError('Log level error')
 
         self.level = level
 
-        if callable(handler):
-            handler = [handler]
-        for h in handler:
-            if h and not callable(h):
-                raise TypeError('Handler must is callable!!')
+        if handler is not None:
+            if not isinstance(handler, list):
+                handler = [handler]
+            for h in handler:
+                if not callable(h):
+                    raise TypeError('Handler must be callable!!')
         self.handler = handler
         self.skip_repeat = skip_repeat
         self.last_msg = None
@@ -113,7 +114,7 @@ class Logger:
         if len(msg) == 0:
             return
 
-        if log_level not in self.group:
+        if log_level not in self.log_level_list:
             raise ValueError('Log level error')
 
         if self.level > log_level:
@@ -134,10 +135,10 @@ class Logger:
 
         total_message = f'{timestamp}{self.prefix} {"".join(msg)}'.strip()
 
-        if self.handler:
-            self.handler(total_message)
-
         with global_lock:
+            if self.handler:
+                for handler in self.handler:
+                    handler(total_message)
             print(total_message)
 
 #                        ____________
