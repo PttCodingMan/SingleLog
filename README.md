@@ -76,7 +76,7 @@ It will display
 ```
 ### handler
 Sometimes, you want to catch the log message at higher level.  
-Use log handler
+Use log handler.
 ```python
 def log_to_file(msg):
     with open('single_log.txt', 'a', encoding='utf8') as f:
@@ -84,6 +84,23 @@ def log_to_file(msg):
 
 
 logger = Logger('INFO', Logger.INFO, handler=log_to_file)
+
+logger.info('1')
+logger.info(2)
+logger.info('show value', 456)
+```
+Handler can also be a list.
+```python
+def log_to_file(msg):
+    with open('single_log.txt', 'a', encoding='utf8') as f:
+        f.write(f'{msg}\n')
+
+def log_to_file2(msg):
+    with open('single_log_2.txt', 'a', encoding='utf8') as f:
+        f.write(f'{msg}\n')
+
+
+logger = Logger('INFO', Logger.INFO, handler=[log_to_file, log_to_file2])
 
 logger.info('1')
 logger.info(2)
