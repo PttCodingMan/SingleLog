@@ -83,8 +83,12 @@ class Logger:
             raise ValueError('Log level error')
 
         self.level = level
-        if handler and not callable(handler):
-            raise TypeError('Handler must is callable!!')
+
+        if callable(handler):
+            handler = [handler]
+        for h in handler:
+            if h and not callable(h):
+                raise TypeError('Handler must is callable!!')
         self.handler = handler
         self.skip_repeat = skip_repeat
         self.last_msg = None
