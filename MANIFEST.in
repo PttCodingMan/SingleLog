@@ -6,4 +6,3 @@ recursive-include SingleLog *
 
 exclude MANIFEST.in
 exclude README.md
-exclude setup.py
