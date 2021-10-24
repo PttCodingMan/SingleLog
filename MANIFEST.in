@@ -2,4 +2,8 @@ include LICENSE
 include README.md
 
 # Include the data files
-recursive-include single_log *
+recursive-include SingleLog *
+
+exclude MANIFEST.in
+exclude README.md
+exclude setup.py
