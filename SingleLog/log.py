@@ -1,4 +1,6 @@
+import inspect
 import json
+import os
 import threading
 from time import strftime
 
@@ -69,6 +71,21 @@ class LoggerLevel:
         return self.value >= other.value
 
 
+def get_call_location_info(func):
+    def wrapper(*args, **kwargs):
+        cf = inspect.currentframe()
+
+        line_no = cf.f_back.f_lineno
+        file_name = cf.f_back.f_code.co_filename
+        file_name = os.path.basename(file_name)
+        kwargs.update({
+            'line_no': line_no,
+            'file_name': file_name})
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 class Logger:
     TRACE = LoggerLevel(LoggerLevel.TRACE)
     DEBUG = LoggerLevel(LoggerLevel.DEBUG)
@@ -106,14 +123,15 @@ class Logger:
     def info(self, *msg):
         self.log(Logger.INFO, *msg)
 
-    def debug(self, *msg):
-        self.log(Logger.DEBUG, *msg)
+    @get_call_location_info
+    def debug(self, *msg, **kwargs):
+        self.log(Logger.DEBUG, *msg, **kwargs)
 
-    def trace(self, *msg):
-        self.log(Logger.TRACE, *msg)
+    @get_call_location_info
+    def trace(self, *msg, **kwargs):
+        self.log(Logger.TRACE, *msg, **kwargs)
 
-    def log(self, log_level: LoggerLevel, *msg):
-
+    def log(self, log_level: LoggerLevel, *msg, line_no=None, file_name=None):
         if self.skip_repeat:
             if self.last_msg == msg:
                 return
@@ -136,11 +154,10 @@ class Logger:
         msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
 
-        timestamp = ''
-        if self.timestamp:
-            timestamp = f'[{strftime(self.timestamp)}]'
+        timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+        location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-        total_message = f'{timestamp}{self.prefix} {"".join(msg)}'.strip()
+        total_message = f'{timestamp}{self.prefix}{location} {"".join(msg)}'.strip()
 
         with global_lock:
             if self.handler:
