@@ -23,7 +23,7 @@ logger = Logger(prefix, log_level)
 ```python
 prefix = 'example'
 log_level = Logger.INFO
-logger = Logger(prefix, Logger.INFO)
+logger = Logger(prefix)
 
 logger.info(1)
 logger.debug(2)
@@ -33,33 +33,11 @@ It will display
 ```python
 [20210501 11:19:48][example] 1
 ```
-Also, I provide an interface that takes the log level as a parameter.  
-You can change the log level programmably.
-```python
-logger = Logger('example', Logger.INFO)
-
-logger.log(Logger.INFO, 'Hi')
-logger.log(Logger.DEBUG, 'Hi')
-```
-It will display
-```python
-[20210501 11:59:52][example] Hi
-```
-Single logger supports args as parameter.  
-It helps you to format your log message
-```python
-logger = Logger('example', Logger.INFO)
-logger.log(Logger.INFO, 'This is the description', 'value 0', 'value 1', 99)
-```
-It will display
-```python
-[20210501 12:10:01][example] This is the description [value 0] [value 1] [99]
-```
 
 Single logger supports many types to display.  
 For example: list, dict and tuple
 ```python
-logger = Logger('example', Logger.INFO)
+logger = Logger('example')
 logger.info('show int list', [101, 102, 103])
 logger.info('show tuple', ('12', '14', '16'))
 logger.info('data', {'1': 'value1', '2': 'value2'})

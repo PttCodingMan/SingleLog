@@ -121,17 +121,17 @@ class Logger:
         self.timestamp = timestamp
 
     def info(self, *msg):
-        self.log(Logger.INFO, *msg)
+        self._log(Logger.INFO, *msg)
 
     @get_call_location_info
     def debug(self, *msg, **kwargs):
-        self.log(Logger.DEBUG, *msg, **kwargs)
+        self._log(Logger.DEBUG, *msg, **kwargs)
 
     @get_call_location_info
     def trace(self, *msg, **kwargs):
-        self.log(Logger.TRACE, *msg, **kwargs)
+        self._log(Logger.TRACE, *msg, **kwargs)
 
-    def log(self, log_level: LoggerLevel, *msg, line_no=None, file_name=None):
+    def _log(self, log_level: LoggerLevel, *msg, line_no=None, file_name=None):
         if self.skip_repeat:
             if self.last_msg == msg:
                 return

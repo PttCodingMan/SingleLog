@@ -12,7 +12,6 @@ if __name__ == '__main__':
     logger.info('show int list', [101, 102, 103])
     logger.info('show string list', ['101', '102', '103'])
     logger.info('show tuple', ('12', '14', '16'))
-    logger.log(Logger.INFO, 'TEST')
 
     logger.info('des', 'value0', 'value1', 'value2')
 
@@ -34,7 +33,7 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('INFO', Logger.INFO)
+    logger = Logger('INFO')
 
     logger.info('This should be 1 to print')
     logger.debug('This should NOT be print')
@@ -65,7 +64,7 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger(None, Logger.INFO)
+    logger = Logger(None)
     logger.info('This should no prefix')
 
     print('=' * 20)
@@ -94,7 +93,7 @@ if __name__ == '__main__':
 
 
         def thread_log(thread_id):
-            current_logger = Logger(f'logger-{thread_id}', Logger.INFO)
+            current_logger = Logger(f'logger-{thread_id}')
             for i in range(1000):
                 current_logger.info('show', i)
 
