@@ -77,7 +77,8 @@ class Logger:
 
     log_level_list = [TRACE, DEBUG, INFO, SILENT]
 
-    def __init__(self, prefix, level, handler=None, skip_repeat: bool = False, timestamp: str = "%Y%m%d %H:%M:%S"):
+    def __init__(self, prefix, level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
+                 timestamp: str = "%Y%m%d %H:%M:%S"):
         self.prefix = prefix
         if not self.prefix:
             self.prefix = ''
