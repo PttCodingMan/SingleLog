@@ -5,15 +5,22 @@ from time import strftime
 global_lock = threading.Lock()
 
 
-def _merge(msg) -> str:
-    if isinstance(msg, list):
-        msg = f'[{" ".join([str(x).strip() for x in msg])}]'
-    elif isinstance(msg, tuple):
-        msg = f'({" ".join([str(x).strip() for x in msg])})'
-    elif isinstance(msg, dict):
+def _merge(msg, frame: bool = True) -> str:
+    if isinstance(msg, dict):
         msg = f'\n{json.dumps(msg, indent=2)}'
+    elif isinstance(msg, tuple):
+        msg = " ".join([str(x).strip() for x in msg])
+        if frame:
+            msg = f'({msg})'
     else:
-        msg = f'[{str(msg)}]'
+        if isinstance(msg, str):
+            pass
+        elif hasattr(msg, '__iter__'):
+            msg = " ".join([str(x).strip() for x in msg])
+        else:
+            msg = str(msg)
+        if frame:
+            msg = f'[{msg}]'
 
     return msg
 
@@ -123,10 +130,9 @@ class Logger:
         if len(msg) == 0:
             return
 
-        des = str(msg[0])
-        msg = msg[1:]
+        des = _merge(msg[0], frame=False)
 
-        msg = [f' {_merge(x)}' for x in msg]
+        msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
 
         timestamp = ''
