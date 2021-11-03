@@ -2,6 +2,7 @@ import inspect
 import json
 import os
 import threading
+from enum import IntEnum, unique
 from time import strftime
 
 global_lock = threading.Lock()
@@ -27,48 +28,12 @@ def _merge(msg, frame: bool = True) -> str:
     return msg
 
 
-class LoggerLevel:
+@unique
+class LoggerLevel(IntEnum):
     TRACE = 1
     DEBUG = 2
     INFO = 3
     SILENT = 4
-
-    group = [TRACE, DEBUG, INFO, SILENT]
-
-    def __init__(self, level):
-        if level not in self.group:
-            raise ValueError(f'log level error: {level}')
-        self.value = level
-
-    def __lt__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value < other.value
-
-    def __le__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value <= other.value
-
-    def __eq__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value == other.value
-
-    def __ne__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value != other.value
-
-    def __gt__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value > other.value
-
-    def __ge__(self, other):
-        if not isinstance(other, LoggerLevel):
-            return False
-        return self.value >= other.value
 
 
 def get_call_location_info(func):
@@ -87,12 +52,10 @@ def get_call_location_info(func):
 
 
 class Logger:
-    TRACE = LoggerLevel(LoggerLevel.TRACE)
-    DEBUG = LoggerLevel(LoggerLevel.DEBUG)
-    INFO = LoggerLevel(LoggerLevel.INFO)
-    SILENT = LoggerLevel(LoggerLevel.SILENT)
-
-    log_level_list = [TRACE, DEBUG, INFO, SILENT]
+    TRACE = LoggerLevel.TRACE
+    DEBUG = LoggerLevel.DEBUG
+    INFO = LoggerLevel.INFO
+    SILENT = LoggerLevel.SILENT
 
     def __init__(self, prefix, level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
                  timestamp: str = "%Y%m%d %H:%M:%S"):
@@ -104,8 +67,6 @@ class Logger:
 
         if not isinstance(level, LoggerLevel):
             raise TypeError(f'Error log level type: {type(level)}')
-        if level not in self.log_level_list:
-            raise ValueError('Log level error')
 
         self.level = level
 
@@ -140,7 +101,7 @@ class Logger:
         if len(msg) == 0:
             return
 
-        if log_level not in self.log_level_list:
+        if not isinstance(log_level, LoggerLevel):
             raise ValueError('Log level error')
 
         if self.level > log_level:
