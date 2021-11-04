@@ -31,17 +31,19 @@ Result
 [20210501 11:19:48][demo] 1
 ```
 
-When the log level is set to ```Logger.DEBUG```, the location will be displayed.
+When the log level is set to ```Logger.DEBUG``` or ```Logger.TRACE```, the location will be displayed.
 
 ```python
-logger = Logger('demo', Logger.DEBUG)
+logger = Logger('demo', Logger.TRACE)
 logger.info('This is the description', 'demo')
 logger.debug('This is the description', 'demo')
+logger.trace('This is the description', 'demo')
 ```
 Result
-```shell
-[20211104 08:56:11][demo] This is the description [demo]
-[20211104 08:56:11][demo][demo.py 7] This is the description [demo]
+```Batchfile
+[20211104 09:13:16][demo] This is the description [demo]
+[20211104 09:13:16][demo][demo.py 7] This is the description [demo]
+[20211104 09:13:16][demo][demo.py 8] This is the description [demo]
 ```
 
 SingleLog Supports some common types to display. Such as list, dict and tuple.
