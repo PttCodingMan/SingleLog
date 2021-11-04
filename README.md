@@ -27,7 +27,7 @@ logger.debug(2)
 logger.trace(3)
 ```
 Result
-```shell
+```Batchfile
 [20210501 11:19:48][demo] 1
 ```
 
@@ -52,7 +52,7 @@ logger.info('show tuple', ('12', '14', '16'))
 logger.info('data', {'1': 'value1', '2': 'value2'})
 ```
 Result
-```shell
+```Batchfile
 [20210501 12:14:48][demo] show int list [101 102 103]
 [20210501 12:14:48][demo] show tuple (12 14 16)
 [20210501 12:14:48][demo] data 
@@ -70,7 +70,7 @@ logger = Logger('demo')
 logger.info('This is the description', 'value 0', 'value 1', 99)
 ```
 Result
-```python
+```Batchfile
 [20210501 12:10:01][demo] This is the description [value 0] [value 1] [99]
 ```
 
