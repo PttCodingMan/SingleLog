@@ -13,46 +13,70 @@ pip install SingleLog
 ## Tutorials
 ### Init
 ```python
-prefix = 'example'
-log_level = Logger.INFO
+log_level = Logger.INFO # default
 # log_level = Logger.DEBUG
 # log_level = Logger.TRACE
-logger = Logger(prefix, log_level)
+logger = Logger('demo', log_level)
 ```
 ### Display
 ```python
-prefix = 'example'
-log_level = Logger.INFO
-logger = Logger(prefix)
+logger = Logger('demo')
 
 logger.info(1)
 logger.debug(2)
 logger.trace(3)
 ```
-It will display
-```python
-[20210501 11:19:48][example] 1
+Result
+```Batchfile
+[20210501 11:19:48][demo] 1
 ```
 
-Single logger supports many types to display.  
-For example: list, dict and tuple
+When the log level is set to ```Logger.DEBUG``` or ```Logger.TRACE```, the location will be displayed.
+
 ```python
-logger = Logger('example')
+logger = Logger('demo', Logger.TRACE)
+logger.info('This is the description', 'demo')
+logger.debug('This is the description', 'demo')
+logger.trace('This is the description', 'demo')
+```
+Result
+```Batchfile
+[20211104 09:13:16][demo] This is the description [demo]
+[20211104 09:13:16][demo][demo.py 7] This is the description [demo]
+[20211104 09:13:16][demo][demo.py 8] This is the description [demo]
+```
+
+SingleLog Supports some common types to display. Such as list, dict and tuple.
+```python
+logger = Logger('demo')
 logger.info('show int list', [101, 102, 103])
 logger.info('show tuple', ('12', '14', '16'))
 logger.info('data', {'1': 'value1', '2': 'value2'})
 ```
-It will display
-```python
-[20210501 12:14:48][example] show int list [101 102 103]
-[20210501 12:14:48][example] show tuple (12 14 16)
-[20210501 12:14:48][example] data 
+Result
+```Batchfile
+[20210501 12:14:48][demo] show int list [101 102 103]
+[20210501 12:14:48][demo] show tuple (12 14 16)
+[20210501 12:14:48][demo] data 
 {
   "1": "value1",
   "2": "value2"
 }
+
 ```
-### handler
+
+SingleLog supports args as parameter.  
+It helps you to format your log message
+```python
+logger = Logger('demo')
+logger.info('This is the description', 'value 0', 'value 1', 99)
+```
+Result
+```Batchfile
+[20210501 12:10:01][demo] This is the description [value 0] [value 1] [99]
+```
+
+### Handler
 Sometimes, you want to catch the log message at higher level.  
 Use log handler.
 ```python
@@ -84,5 +108,5 @@ logger.info('1')
 logger.info(2)
 logger.info('show value', 456)
 ```
-In this example, the log message will display on the screen.  
+In this demo, the log message will display on the screen.  
 Also you can find it in local file.
