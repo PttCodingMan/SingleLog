@@ -5,7 +5,7 @@
 
 from setuptools import setup
 
-long_description = '''single log is the logger developed by CodingMan'''
+long_description = '''SingleLog is a Python logger developed by CodingMan'''
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
