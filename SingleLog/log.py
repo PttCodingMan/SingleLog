@@ -66,8 +66,6 @@ class Logger:
         self.last_msg = None
         self.timestamp = timestamp
 
-        self.cf = inspect.currentframe()
-
     def info(self, *msg):
         self._log(Logger.INFO, *msg)
 
@@ -96,8 +94,9 @@ class Logger:
             return
 
         if self.level <= self.DEBUG:
-            line_no = self.cf.f_back.f_lineno
-            file_name = self.cf.f_back.f_code.co_filename
+            cf = inspect.currentframe()
+            line_no = cf.f_back.f_back.f_lineno
+            file_name = cf.f_back.f_back.f_code.co_filename
             file_name = os.path.basename(file_name)
         else:
             line_no = None
