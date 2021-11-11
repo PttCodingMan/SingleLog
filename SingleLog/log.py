@@ -36,21 +36,6 @@ class LoggerLevel(IntEnum):
     SILENT = 4
 
 
-def get_call_location_info(func):
-    def wrapper(*args, **kwargs):
-        cf = inspect.currentframe()
-
-        line_no = cf.f_back.f_lineno
-        file_name = cf.f_back.f_code.co_filename
-        file_name = os.path.basename(file_name)
-        kwargs.update({
-            'line_no': line_no,
-            'file_name': file_name})
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 class Logger:
     TRACE = LoggerLevel.TRACE
     DEBUG = LoggerLevel.DEBUG
@@ -81,18 +66,18 @@ class Logger:
         self.last_msg = None
         self.timestamp = timestamp
 
+        self.cf = inspect.currentframe()
+
     def info(self, *msg):
         self._log(Logger.INFO, *msg)
 
-    @get_call_location_info
-    def debug(self, *msg, **kwargs):
-        self._log(Logger.DEBUG, *msg, **kwargs)
+    def debug(self, *msg):
+        self._log(Logger.DEBUG, *msg)
 
-    @get_call_location_info
-    def trace(self, *msg, **kwargs):
-        self._log(Logger.TRACE, *msg, **kwargs)
+    def trace(self, *msg):
+        self._log(Logger.TRACE, *msg)
 
-    def _log(self, log_level: LoggerLevel, *msg, line_no=None, file_name=None):
+    def _log(self, log_level: LoggerLevel, *msg):
         if self.skip_repeat:
             if self.last_msg == msg:
                 return
@@ -109,6 +94,13 @@ class Logger:
 
         if len(msg) == 0:
             return
+
+        if self.level <= self.DEBUG:
+            line_no = self.cf.f_back.f_lineno
+            file_name = self.cf.f_back.f_code.co_filename
+            file_name = os.path.basename(file_name)
+        else:
+            line_no = None
 
         des = _merge(msg[0], frame=False)
 
