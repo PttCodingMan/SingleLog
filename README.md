@@ -2,6 +2,7 @@
 [![Package Version](https://img.shields.io/pypi/v/SingleLog.svg)](https://pypi.python.org/pypi/SingleLog)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/SingleLog)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
+[![Python package](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml/badge.svg)](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml)
 
 ### A python logger, super easy to use and thread safe.
 
