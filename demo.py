@@ -1,8 +1,9 @@
 from SingleLog.log import Logger
-from SingleLog.log import LoggerLevel
 
 if __name__ == '__main__':
     logger = Logger('demo')
+
+    logger.info([101, 102, 103])
 
     logger.info('data', {'1': 'value1', '2': 'value2'})
     logger.info(1)

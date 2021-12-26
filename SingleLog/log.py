@@ -10,7 +10,7 @@ global_lock = threading.Lock()
 
 def _merge(msg, frame: bool = True) -> str:
     if isinstance(msg, dict):
-        msg = f'\n{json.dumps(msg, indent=2)}'
+        msg = f'\n{json.dumps(msg, indent=2, ensure_ascii=False)}'
     elif isinstance(msg, tuple):
         msg = " ".join([str(x).strip() for x in msg])
         if frame:
@@ -25,7 +25,7 @@ def _merge(msg, frame: bool = True) -> str:
         if frame:
             msg = f'[{msg}]'
 
-    return msg
+    return msg.strip()
 
 
 @unique
@@ -81,16 +81,13 @@ class Logger:
                 return
             self.last_msg = msg
 
-        if len(msg) == 0:
+        if msg_length := len(msg) == 0:
             return
 
         if not isinstance(log_level, LoggerLevel):
             raise ValueError('Log level error')
 
         if self.level > log_level:
-            return
-
-        if len(msg) == 0:
             return
 
         if self.level <= self.DEBUG:
@@ -101,7 +98,7 @@ class Logger:
         else:
             line_no = None
 
-        des = _merge(msg[0], frame=False)
+        des = _merge(msg[0], frame=msg_length != 1)
 
         msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
