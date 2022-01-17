@@ -81,7 +81,7 @@ class Logger:
                 return
             self.last_msg = msg
 
-        if msg_length := len(msg) == 0:
+        if (msg_length := len(msg)) == 0:
             return
 
         if not isinstance(log_level, LoggerLevel):
@@ -98,7 +98,7 @@ class Logger:
         else:
             line_no = None
 
-        des = _merge(msg[0], frame=msg_length != 1)
+        des = _merge(msg[0], frame=msg_length == 1)
 
         msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
