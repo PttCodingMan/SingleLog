@@ -18,7 +18,7 @@ def _merge(msg, frame: bool = True) -> str:
     else:
         if isinstance(msg, str):
             pass
-        elif hasattr(msg, '__iter__'):
+        elif isinstance(msg, list):
             msg = " ".join([str(x).strip() for x in msg])
         else:
             msg = str(msg)

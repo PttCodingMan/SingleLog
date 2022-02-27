@@ -3,6 +3,8 @@ from SingleLog.log import Logger
 if __name__ == '__main__':
     logger = Logger('demo')
 
+    logger.info('type', type(''))
+
     logger.info([101, 102, 103])
 
     logger.info('data', {'1': 'value1', '2': 'value2'})
@@ -75,6 +77,7 @@ if __name__ == '__main__':
         def log_to_file(msg):
             with open('single_log.txt', 'a', encoding='utf8') as f:
                 f.write(f'{msg}\n')
+
 
         def log_to_file2(msg):
             with open('single_log_2.txt', 'a', encoding='utf8') as f:
