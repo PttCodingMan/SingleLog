@@ -9,7 +9,7 @@ global_lock = threading.Lock()
 
 
 def _merge(msg, frame: bool = True) -> str:
-    if isinstance(msg, dict):
+    if isinstance(msg, dict) or isinstance(msg, list):
         msg = f'\n{json.dumps(msg, indent=2, ensure_ascii=False)}'
     elif isinstance(msg, tuple):
         msg = " ".join([str(x).strip() for x in msg])
@@ -18,8 +18,8 @@ def _merge(msg, frame: bool = True) -> str:
     else:
         if isinstance(msg, str):
             pass
-        elif isinstance(msg, list):
-            msg = " ".join([str(x).strip() for x in msg])
+        # elif isinstance(msg, list):
+        #     msg = " ".join([str(x).strip() for x in msg])
         else:
             msg = str(msg)
         if frame:
