@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+import sys
 import threading
 from enum import IntEnum, unique
 from time import strftime
@@ -18,8 +19,6 @@ def _merge(msg, frame: bool = True) -> str:
     else:
         if isinstance(msg, str):
             pass
-        # elif isinstance(msg, list):
-        #     msg = " ".join([str(x).strip() for x in msg])
         else:
             msg = str(msg)
         if frame:
@@ -112,7 +111,16 @@ class Logger:
             if self.handler:
                 for handler in self.handler:
                     handler(total_message)
-            print(total_message)
+            try:
+                print(total_message)
+            except UnicodeEncodeError:
+                try:
+                    print(total_message.encode(sys.stdin.encoding, 'replace').decode(sys.stdin.encoding))
+                except:
+                    try:
+                        print(total_message.encode('utf-8', "replace").decode('utf-8'))
+                    except:
+                        pass
 
 #                        ____________
 #                       |            |
