@@ -112,9 +112,7 @@ class Logger:
             try:
                 if self.handler:
                     for handler in self.handler:
-                        print('qq')
                         handler(total_message)
-                        print('qq 1')
             except UnicodeEncodeError:
                 total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
                 if self.handler:
