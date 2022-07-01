@@ -74,13 +74,13 @@ if __name__ == '__main__':
 
     enable_handler_test = False
     if enable_handler_test:
+
         def log_to_file(msg):
-            with open('single_log.txt', 'a', encoding='utf8') as f:
+            with open('./single_log_1.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{msg}\n')
 
-
         def log_to_file2(msg):
-            with open('single_log_2.txt', 'a', encoding='utf8') as f:
+            with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{msg}\n')
 
 

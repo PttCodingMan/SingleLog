@@ -97,7 +97,7 @@ class Logger:
         else:
             line_no = None
 
-        des = _merge(msg[0], frame=msg_length == 1)
+        des = _merge(msg[0], frame=False)
 
         msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
@@ -108,9 +108,19 @@ class Logger:
         total_message = f'{timestamp}{self.prefix}{location} {"".join(msg)}'.strip()
 
         with global_lock:
-            if self.handler:
-                for handler in self.handler:
-                    handler(total_message)
+
+            try:
+                if self.handler:
+                    for handler in self.handler:
+                        print('qq')
+                        handler(total_message)
+                        print('qq 1')
+            except UnicodeEncodeError:
+                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
+                if self.handler:
+                    for handler in self.handler:
+                        handler(total_message)
+
             try:
                 print(total_message)
             except UnicodeEncodeError:
