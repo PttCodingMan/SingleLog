@@ -42,7 +42,7 @@ class Logger:
     SILENT = LoggerLevel.SILENT
 
     def __init__(self, logger_name, logger_level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
-                 timestamp: str = "%Y%m%d %H:%M:%S"):
+                 timestamp: str = "%m.%d %H:%M:%S"):
         """
         Init of SingleLog.
         :param logger_name: the display name of current logger.
