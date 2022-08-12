@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='SingleLog',  # Required
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.1.11',
+    version='1.1.12',
 
     description='SingleLog\ngithub: https://github.com/PttCodingMan/SingleLog',
     long_description=open('README.md', encoding="utf-8").read(),
