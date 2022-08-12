@@ -41,18 +41,27 @@ class Logger:
     INFO = LoggerLevel.INFO
     SILENT = LoggerLevel.SILENT
 
-    def __init__(self, prefix, level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
+    def __init__(self, logger_name, logger_level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
                  timestamp: str = "%Y%m%d %H:%M:%S"):
-        self.prefix = prefix
-        if not self.prefix:
-            self.prefix = ''
+        """
+        Init of SingleLog.
+        :param logger_name: the display name of current logger.
+        :param logger_level: (Optional) (Default: Logger.INFO)the log level of current logger.
+        :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
+        :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
+        :param timestamp: (Optional) the timestamp format of current logger.
+        """
+
+        self.logger_name = logger_name
+        if not self.logger_name:
+            self.logger_name = ''
         else:
-            self.prefix = f'[{self.prefix}]'
+            self.logger_name = f'[{self.logger_name}]'
 
-        if not isinstance(level, LoggerLevel):
-            raise TypeError(f'Error log level type: {type(level)}')
+        if not isinstance(logger_level, LoggerLevel):
+            raise TypeError(f'Error log level type: {type(logger_level)}')
 
-        self.level = level
+        self.logger_level = logger_level
 
         if handler is not None:
             if not isinstance(handler, list):
@@ -86,10 +95,10 @@ class Logger:
         if not isinstance(log_level, LoggerLevel):
             raise ValueError('Log level error')
 
-        if self.level > log_level:
+        if self.logger_level > log_level:
             return
 
-        if self.level <= self.DEBUG:
+        if self.logger_level <= self.DEBUG:
             cf = inspect.currentframe()
             line_no = cf.f_back.f_back.f_lineno
             file_name = cf.f_back.f_back.f_code.co_filename
@@ -105,7 +114,7 @@ class Logger:
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
         location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-        total_message = f'{timestamp}{self.prefix}{location} {"".join(msg)}'.strip()
+        total_message = f'{timestamp}{self.logger_name}{location} {"".join(msg)}'.strip()
 
         with global_lock:
 
