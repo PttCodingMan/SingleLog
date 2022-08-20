@@ -18,6 +18,11 @@ if __name__ == '__main__':
 
     logger.info('des', 'value0', 'value1', 'value2')
 
+    try:
+        raise ValueError('ValueError')
+    except Exception as e:
+        logger.info('got exception', str(e))
+
     print('=' * 20)
 
     logger = Logger('TRACE', Logger.TRACE)
