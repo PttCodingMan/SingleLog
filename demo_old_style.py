@@ -1,13 +1,10 @@
-from SingleLog import Logger
-from SingleLog import LogLevel
+from SingleLog.log import Logger
 
 if __name__ == '__main__':
-    logger = Logger('test')
+    logger = Logger('demo')
 
     logger.info('type', type(''))
-    print('===')
-    logger.info('ok', '123 ', ' 456')
-    print('===')
+
     logger.info([101, 102, 103])
 
     logger.info('data', {'1': 'value1', '2': 'value2'})
@@ -28,7 +25,7 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('TRACE', LogLevel.TRACE)
+    logger = Logger('TRACE', Logger.TRACE)
 
     logger.info('This should be 3 to print')
     logger.debug('This should be 3 to print')
@@ -36,7 +33,7 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('DEBUG', LogLevel.DEBUG)
+    logger = Logger('DEBUG', Logger.DEBUG)
 
     logger.info('This should be 2 to print')
     logger.debug('This should be 2 to print')
@@ -52,7 +49,7 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('SILENT', LogLevel.SILENT)
+    logger = Logger('SILENT', Logger.SILENT)
 
     logger.info('This should NOT be print')
     logger.debug('This should NOT be print')
@@ -60,17 +57,17 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('skip', LogLevel.INFO, skip_repeat=True)
+    logger = Logger('skip', Logger.INFO, skip_repeat=True)
     logger.info('This should only print once')
     logger.info('This should only print once')
     logger.info('This should only print once')
 
     print('=' * 20)
 
-    logger = Logger('custom timestamp', LogLevel.INFO, timestamp="%H:%M:%S")
+    logger = Logger('custom timestamp', Logger.INFO, timestamp="%H:%M:%S")
     logger.info('This should show custom timestamp')
 
-    logger = Logger('no timestamp', LogLevel.INFO, timestamp=None)
+    logger = Logger('no timestamp', Logger.INFO, timestamp=None)
     logger.info('This should show no timestamp')
 
     print('=' * 20)
@@ -82,17 +79,17 @@ if __name__ == '__main__':
 
     enable_handler_test = False
     if enable_handler_test:
+
         def log_to_file(msg):
             with open('./single_log_1.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{msg}\n')
-
 
         def log_to_file2(msg):
             with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{msg}\n')
 
 
-        logger = Logger('INFO', LogLevel.INFO, handler=[log_to_file, log_to_file2])
+        logger = Logger('INFO', Logger.INFO, handler=[log_to_file, log_to_file2])
 
         logger.info('1')
         logger.info(2)

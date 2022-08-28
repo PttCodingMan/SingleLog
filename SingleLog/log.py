@@ -24,11 +24,10 @@ def _merge(msg, frame: bool = True) -> str:
         if frame:
             msg = f'[{msg}]'
 
-    return msg.strip()
+    return msg
 
 
-@unique
-class LoggerLevel(IntEnum):
+class LogLevel(IntEnum):
     TRACE = 1
     DEBUG = 2
     INFO = 3
@@ -36,17 +35,17 @@ class LoggerLevel(IntEnum):
 
 
 class Logger:
-    TRACE = LoggerLevel.TRACE
-    DEBUG = LoggerLevel.DEBUG
-    INFO = LoggerLevel.INFO
-    SILENT = LoggerLevel.SILENT
+    TRACE = LogLevel.TRACE
+    DEBUG = LogLevel.DEBUG
+    INFO = LogLevel.INFO
+    SILENT = LogLevel.SILENT
 
-    def __init__(self, logger_name, logger_level: LoggerLevel = INFO, handler=None, skip_repeat: bool = False,
-                 timestamp: str = "%m.%d %H:%M:%S"):
+    def __init__(self, logger_name, log_level: LogLevel = INFO, handler=None, skip_repeat: bool = False,
+                 timestamp: [str | None] = "%m.%d %H:%M:%S"):
         """
         Init of SingleLog.
         :param logger_name: the display name of current logger.
-        :param logger_level: (Optional) (Default: Logger.INFO)the log level of current logger.
+        :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
         :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
@@ -58,10 +57,10 @@ class Logger:
         else:
             self.logger_name = f'[{self.logger_name}]'
 
-        if not isinstance(logger_level, LoggerLevel):
-            raise TypeError(f'Error log level type: {type(logger_level)}')
+        if not isinstance(log_level, LogLevel):
+            raise TypeError(f'Error log level type: {type(log_level)}')
 
-        self.logger_level = logger_level
+        self.logger_level = log_level
 
         if handler is not None:
             if not isinstance(handler, list):
@@ -83,16 +82,16 @@ class Logger:
     def trace(self, *msg):
         self._log(Logger.TRACE, *msg)
 
-    def _log(self, log_level: LoggerLevel, *msg):
+    def _log(self, log_level: LogLevel, *msg):
         if self.skip_repeat:
             if self.last_msg == msg:
                 return
             self.last_msg = msg
 
-        if (msg_length := len(msg)) == 0:
-            return
+        if (msg_size := len(msg)) == 0:
+            msg = ' '
 
-        if not isinstance(log_level, LoggerLevel):
+        if not isinstance(log_level, LogLevel):
             raise ValueError('Log level error')
 
         if self.logger_level > log_level:
@@ -105,6 +104,7 @@ class Logger:
             file_name = os.path.basename(file_name)
         else:
             line_no = None
+            file_name = None
 
         des = _merge(msg[0], frame=False)
 
