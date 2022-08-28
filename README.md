@@ -130,4 +130,4 @@ logger.info('show value', 456)
 In this demo, the log message will display on the screen.  
 Also you can find it in local file.
 
-You can check all the demo in [demo.py](/demo.py).
+You can check all the demo in [demo.py](https://github.com/PttCodingMan/SingleLog/blob/master/demo.py).

@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import inspect
 import json
 import os
 import sys
 import threading
-from enum import IntEnum, unique
+from enum import IntEnum
 from time import strftime
 
 global_lock = threading.Lock()
