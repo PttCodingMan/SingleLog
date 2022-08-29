@@ -3,9 +3,10 @@ from setuptools import setup
 setup(
     name='SingleLog',  # Required
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.1.16',
+    version='2.0.0',
 
-    description='SingleLog\ngithub: https://github.com/PttCodingMan/SingleLog',
+    description=open('README.md', encoding="utf-8").read(),
+    description_content_type='text/markdown',
     long_description=open('README.md', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
