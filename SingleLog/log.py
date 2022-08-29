@@ -66,10 +66,12 @@ class SingleLog:
             for h in handler:
                 if not callable(h):
                     raise TypeError('Handler must be callable!!')
+
         self.handler = handler
         self.skip_repeat = skip_repeat
-        self.last_msg = None
         self.timestamp = timestamp
+
+        self._last_msg = None
 
     def info(self, *msg):
         self._log(LogLevel.INFO, *msg)
@@ -81,10 +83,6 @@ class SingleLog:
         self._log(LogLevel.TRACE, *msg)
 
     def _log(self, log_level: LogLevel, *msg):
-        if self.skip_repeat:
-            if self.last_msg == msg:
-                return
-            self.last_msg = msg
 
         if not isinstance(log_level, LogLevel):
             raise ValueError('Log level error')
@@ -92,7 +90,7 @@ class SingleLog:
         if self.log_level > log_level:
             return
 
-        if (msg_size := len(msg)) == 0:
+        if 0 == (msg_size := len(msg)):
             msg = ' '
 
         if self.log_level <= LogLevel.DEBUG:
@@ -108,11 +106,17 @@ class SingleLog:
 
         msg = [f' {_merge(x)}' for x in msg[1:]]
         msg.insert(0, des)
+        msg = ''.join(msg)
+
+        if self.skip_repeat:
+            if self._last_msg == msg:
+                return
+            self._last_msg = msg
 
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
         location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-        total_message = f'{timestamp}{self.log_name}{location} {"".join(msg)}'.strip()
+        total_message = f'{timestamp}{self.log_name}{location} {msg}'.strip()
 
         with global_lock:
 
@@ -135,10 +139,11 @@ class SingleLog:
                     try:
                         print(total_message.encode('utf-8', "replace").decode('utf-8'))
                     except:
-                        pass
+                        print('sorry, can not print the message')
 
 
 class Logger(SingleLog):
+    # the old logger
     TRACE = LogLevel.TRACE
     DEBUG = LogLevel.DEBUG
     INFO = LogLevel.INFO

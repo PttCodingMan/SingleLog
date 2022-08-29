@@ -60,7 +60,6 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger = Logger('skip', LogLevel.INFO, skip_repeat=True)
     logger.info('This should only print once')
     logger.info('This should only print once')
     logger.info('This should only print once')
