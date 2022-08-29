@@ -1,8 +1,12 @@
+import time
+
 from SingleLog import Logger
 from SingleLog import LogLevel
 
 if __name__ == '__main__':
     logger = Logger('test')
+
+    logger.info('')
 
     logger.info('type', type(''))
     print('===')
@@ -60,9 +64,10 @@ if __name__ == '__main__':
 
     print('=' * 20)
 
-    logger.info('This should only print once')
-    logger.info('This should only print once')
-    logger.info('This should only print once')
+    logger = Logger('test', skip_repeat=True)
+    logger.info('This should only print once', 'and its a silent msg on top')
+    logger.info('This should only print once', 'and its a silent msg on top')
+    logger.info('This should only print once', 'and its a silent msg on top')
 
     print('=' * 20)
 
@@ -70,7 +75,7 @@ if __name__ == '__main__':
     logger.info('This should show custom timestamp')
 
     logger = Logger('no timestamp', LogLevel.INFO, timestamp=None)
-    logger.info('This should show no timestamp')
+    logger.info('This should show', 'no timestamp')
 
     print('=' * 20)
 
@@ -78,6 +83,27 @@ if __name__ == '__main__':
     logger.info('This should no prefix')
 
     print('=' * 20)
+
+    logger = Logger()
+    logger.info('default logger print')
+
+    print('=' * 20)
+
+    logger.do_info('do something success')
+    time.sleep(0.5)
+    logger.done('ok')
+
+    logger.do_info('do something fails')
+    time.sleep(0.5)
+    logger.done('fails')
+
+    print('=' * 20)
+
+    logger = Logger(log_level=LogLevel.INFO)
+
+    logger.do_debug('do something success')
+    time.sleep(0.5)
+    logger.done('DEBUG')
 
     enable_handler_test = False
     if enable_handler_test:
