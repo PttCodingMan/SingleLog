@@ -3,10 +3,14 @@ from __future__ import annotations
 import inspect
 import json
 import os
-import sys
 import threading
-from enum import IntEnum
+from enum import IntEnum, auto
 from time import strftime
+
+from AutoStrEnum import AutoStrEnum
+from colorama import init, Fore
+
+init(autoreset=True)
 
 global_lock = threading.Lock()
 
@@ -36,10 +40,22 @@ class LogLevel(IntEnum):
     SILENT = 4
 
 
+class LoggerStatus(AutoStrEnum):
+    DOING = auto()
+    DONE = auto()
+
+    FINISH = auto()
+
+
+success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'okey', 'true', 't', 'complete']
+
+fails = ['fail', 'false', 'f', 'error', 'e', 'no', 'n', 'bug']
+
+
 class SingleLog:
 
-    def __init__(self, log_name: str, log_level: LogLevel = LogLevel.INFO, handler=None, skip_repeat: bool = False,
-                 timestamp: [str | None] = "%m.%d %H:%M:%S"):
+    def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO, handler=None,
+                 skip_repeat: bool = False, timestamp: [str | None] = "%m.%d %H:%M:%S"):
         """
         Init of SingleLog.
         :param log_name: the display name of current logger.
@@ -71,6 +87,11 @@ class SingleLog:
         self.skip_repeat = skip_repeat
         self.timestamp = timestamp
 
+        # default end: os.linesep
+        self._wait_end = ' ... '
+
+        self._log_status = LoggerStatus.FINISH
+
         self._last_msg = None
 
     def info(self, *msg):
@@ -82,10 +103,34 @@ class SingleLog:
     def trace(self, *msg):
         self._log(LogLevel.TRACE, *msg)
 
-    def _log(self, log_level: LogLevel, *msg):
+    def _do(self, log_level: LogLevel, *msg):
+        if self._log_status == LoggerStatus.DOING:
+            print()
+        self._log_status = LoggerStatus.DOING
+        self._log(log_level, *msg)
+        self._do_level = log_level
 
-        if not isinstance(log_level, LogLevel):
-            raise ValueError('Log level error')
+    def do_info(self, *msg):
+        self._do(LogLevel.INFO, *msg)
+
+    def do_debug(self, *msg):
+        self._do(LogLevel.DEBUG, *msg)
+
+    def do_trace(self, *msg):
+        self._do(LogLevel.TRACE, *msg)
+
+    def done(self, *msg):
+        # its log level is the same as the last do_level
+
+        if self._log_status == LoggerStatus.FINISH:
+            # like normal logger
+            self._log(LogLevel.INFO, *msg)
+        else:
+            self._log_status = LoggerStatus.DONE
+            self._log(self._do_level, *msg)
+            self._log_status = LoggerStatus.FINISH
+
+    def _log(self, log_level: LogLevel, *msg):
 
         if self.log_level > log_level:
             return
@@ -102,21 +147,39 @@ class SingleLog:
             line_no = None
             file_name = None
 
-        des = _merge(msg[0], frame=False)
-
-        msg = [f' {_merge(x)}' for x in msg[1:]]
-        msg.insert(0, des)
-        msg = ''.join(msg)
+        message = ''
+        for m in msg:
+            if not message:
+                message = f'{message}{_merge(m, frame=False)}'
+            else:
+                message = f'{message} {_merge(m)}'
 
         if self.skip_repeat:
-            if self._last_msg == msg:
+            if self._last_msg == message:
                 return
-            self._last_msg = msg
+            self._last_msg = message
 
-        timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-        location = f'[{file_name} {line_no}]' if line_no is not None else ''
+        if self._log_status == LoggerStatus.DONE:
+            color = ''
+            for s in success:
+                if s in message.lower():
+                    color = Fore.GREEN
+                    break
 
-        total_message = f'{timestamp}{self.log_name}{location} {msg}'.strip()
+            if not color:
+                for s in fails:
+                    if s in message.lower():
+                        color = Fore.RED
+                        break
+
+            total_message = f'{color}{message}'
+        else:
+            timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+            location = f'[{file_name} {line_no}]' if line_no is not None else ''
+
+            total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+
+        cur_end = self._wait_end if self._log_status == LoggerStatus.DOING else os.linesep
 
         with global_lock:
 
@@ -131,15 +194,13 @@ class SingleLog:
                         handler(total_message)
 
             try:
-                print(total_message)
+                print(total_message, end=cur_end)
             except UnicodeEncodeError:
+                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
                 try:
-                    print(total_message.encode(sys.stdin.encoding, 'replace').decode(sys.stdin.encoding))
-                except:
-                    try:
-                        print(total_message.encode('utf-8', "replace").decode('utf-8'))
-                    except:
-                        print('sorry, can not print the message')
+                    print(total_message, end=cur_end)
+                except UnicodeEncodeError:
+                    print('sorry, SingleLog can not print the message')
 
 
 class Logger(SingleLog):
