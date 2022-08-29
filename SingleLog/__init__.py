@@ -1,2 +1,2 @@
 from .log import LogLevel
-from .log import Logger
+from .log import SingleLog as Logger

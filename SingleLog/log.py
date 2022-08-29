@@ -12,7 +12,7 @@ global_lock = threading.Lock()
 
 
 def _merge(msg, frame: bool = True) -> str:
-    if isinstance(msg, dict) or isinstance(msg, list):
+    if isinstance(msg, (list, dict)):
         msg = f'\n{json.dumps(msg, indent=2, ensure_ascii=False)}'
     elif isinstance(msg, tuple):
         msg = " ".join([str(x).strip() for x in msg])
@@ -36,33 +36,29 @@ class LogLevel(IntEnum):
     SILENT = 4
 
 
-class Logger:
-    TRACE = LogLevel.TRACE
-    DEBUG = LogLevel.DEBUG
-    INFO = LogLevel.INFO
-    SILENT = LogLevel.SILENT
+class SingleLog:
 
-    def __init__(self, logger_name, log_level: LogLevel = INFO, handler=None, skip_repeat: bool = False,
+    def __init__(self, log_name: str, log_level: LogLevel = LogLevel.INFO, handler=None, skip_repeat: bool = False,
                  timestamp: [str | None] = "%m.%d %H:%M:%S"):
         """
         Init of SingleLog.
-        :param logger_name: the display name of current logger.
+        :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
         :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
         """
 
-        self.logger_name = logger_name
-        if not self.logger_name:
-            self.logger_name = ''
+        self.log_name = log_name
+        if not self.log_name:
+            self.log_name = ''
         else:
-            self.logger_name = f'[{self.logger_name}]'
+            self.log_name = f'[{self.log_name}]'
 
         if not isinstance(log_level, LogLevel):
             raise TypeError(f'Error log level type: {type(log_level)}')
 
-        self.logger_level = log_level
+        self.log_level = log_level
 
         if handler is not None:
             if not isinstance(handler, list):
@@ -76,13 +72,13 @@ class Logger:
         self.timestamp = timestamp
 
     def info(self, *msg):
-        self._log(Logger.INFO, *msg)
+        self._log(LogLevel.INFO, *msg)
 
     def debug(self, *msg):
-        self._log(Logger.DEBUG, *msg)
+        self._log(LogLevel.DEBUG, *msg)
 
     def trace(self, *msg):
-        self._log(Logger.TRACE, *msg)
+        self._log(LogLevel.TRACE, *msg)
 
     def _log(self, log_level: LogLevel, *msg):
         if self.skip_repeat:
@@ -90,16 +86,16 @@ class Logger:
                 return
             self.last_msg = msg
 
-        if (msg_size := len(msg)) == 0:
-            msg = ' '
-
         if not isinstance(log_level, LogLevel):
             raise ValueError('Log level error')
 
-        if self.logger_level > log_level:
+        if self.log_level > log_level:
             return
 
-        if self.logger_level <= self.DEBUG:
+        if (msg_size := len(msg)) == 0:
+            msg = ' '
+
+        if self.log_level <= LogLevel.DEBUG:
             cf = inspect.currentframe()
             line_no = cf.f_back.f_back.f_lineno
             file_name = cf.f_back.f_back.f_code.co_filename
@@ -116,7 +112,7 @@ class Logger:
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
         location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-        total_message = f'{timestamp}{self.logger_name}{location} {"".join(msg)}'.strip()
+        total_message = f'{timestamp}{self.log_name}{location} {"".join(msg)}'.strip()
 
         with global_lock:
 
@@ -140,6 +136,13 @@ class Logger:
                         print(total_message.encode('utf-8', "replace").decode('utf-8'))
                     except:
                         pass
+
+
+class Logger(SingleLog):
+    TRACE = LogLevel.TRACE
+    DEBUG = LogLevel.DEBUG
+    INFO = LogLevel.INFO
+    SILENT = LogLevel.SILENT
 
 #                        ____________
 #                       |            |
