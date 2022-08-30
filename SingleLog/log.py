@@ -6,6 +6,7 @@ import os
 import threading
 from enum import IntEnum, auto
 from time import strftime
+from typing import Callable
 
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
@@ -47,15 +48,16 @@ class LoggerStatus(AutoStrEnum):
     FINISH = auto()
 
 
-success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'okey', 'true', 't', 'complete']
-
-fails = ['fail', 'false', 'f', 'error', 'e', 'no', 'n', 'bug']
+default_key_word_success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'okey', 'true', 't', 'complete', 'pass']
+default_key_word_fails = ['fail', 'false', 'f', 'error', 'e', 'no', 'n', 'bug']
 
 
 class SingleLog:
 
-    def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO, handler=None,
-                 skip_repeat: bool = False, timestamp: [str | None] = "%m.%d %H:%M:%S"):
+    def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
+                 skip_repeat: bool = False, handler: Callable = None, od_end: str = ' ... ',
+                 timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
+                 key_word_fails: [list | None] = None):
         """
         Init of SingleLog.
         :param log_name: the display name of current logger.
@@ -63,6 +65,9 @@ class SingleLog:
         :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
+        :param od_end: (Optional) the end of the output msg.
+        :param key_word_success: (Optional) the key words of success.
+        :param key_word_fails: (Optional) the key words of fails.
         """
 
         self.log_name = log_name
@@ -87,11 +92,17 @@ class SingleLog:
         self.skip_repeat = skip_repeat
         self.timestamp = timestamp
 
-        # default end: os.linesep
-        self._wait_end = ' ... '
+        self.do_end = od_end
+
+        if key_word_success is None:
+            key_word_success = default_key_word_success
+        self.key_word_success = key_word_success
+
+        if key_word_fails is None:
+            key_word_fails = default_key_word_fails
+        self.key_word_fails = key_word_fails
 
         self._log_status = LoggerStatus.FINISH
-
         self._last_msg = None
 
     def info(self, *msg):
@@ -123,7 +134,7 @@ class SingleLog:
         # its log level is the same as the last do_level
 
         if self._log_status == LoggerStatus.FINISH:
-            # like normal logger
+            # works like normal logger
             self._log(LogLevel.INFO, *msg)
         else:
             self._log_status = LoggerStatus.DONE
@@ -161,13 +172,13 @@ class SingleLog:
 
         if self._log_status == LoggerStatus.DONE:
             color = ''
-            for s in success:
+            for s in self.key_word_success:
                 if s in message.lower():
                     color = Fore.GREEN
                     break
 
             if not color:
-                for s in fails:
+                for s in self.key_word_fails:
                     if s in message.lower():
                         color = Fore.RED
                         break
@@ -179,7 +190,7 @@ class SingleLog:
 
             total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
-        cur_end = self._wait_end if self._log_status == LoggerStatus.DOING else os.linesep
+        cur_end = self.do_end if self._log_status == LoggerStatus.DOING else os.linesep
 
         with global_lock:
 
