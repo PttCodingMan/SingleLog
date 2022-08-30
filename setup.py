@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='SingleLog',  # Required
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='2.0.1',
+    version='2.0.2',
 
     description=open('README.md', encoding="utf-8").read(),
     description_content_type='text/markdown',
@@ -28,6 +28,6 @@ setup(
     keywords=['log', 'logger', 'library'],
 
     python_requires='>=3.8',
-    packages=['SingleLog'],
+    packages=['AutoStrEnum'],
     install_requires=[],
 )
