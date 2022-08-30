@@ -4,11 +4,11 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
 [![Python package](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml/badge.svg)](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml)
 
-### A python logger, super easy to use and thread safe.
+### A single python logger, super easy to use and thread safe.
 
 ## Install
 ```
-pip install SingleLog
+pip install SingleLog -U
 ```
 
 ## Tutorials
@@ -18,9 +18,10 @@ from SingleLog import Logger
 from SingleLog import LogLevel
 
 log_level = LogLevel.INFO # default
-# log_level = Logger.DEBUG
-# log_level = Logger.TRACE
+# log_level = LogLevel.DEBUG
+# log_level = LogLevel.TRACE
 logger = Logger('demo', log_level)
+```
 ```
 ### Display
 ```python
@@ -50,12 +51,12 @@ logger.trace('This is the description', 'demo')
 ```
 Result
 ```Batchfile
-[20211104 09:13:16][demo] This is the description [demo]
+[20211104 09:13:16][demo][demo.py 6] This is the description [demo]
 [20211104 09:13:16][demo][demo.py 7] This is the description [demo]
 [20211104 09:13:16][demo][demo.py 8] This is the description [demo]
 ```
 
-SingleLog Supports some common types to display. Such as list, dict and tuple.
+SingleLog Supports some common types to display in format. Such as list, dict and tuple.
 ```python
 from SingleLog import Logger
 
@@ -76,17 +77,21 @@ Result
 
 ```
 
-SingleLog supports args as parameter.  
-It helps you to format your log message
+Supports the `do` method that you can call it, when you finish the work.
+
 ```python
+import time
 from SingleLog import Logger
 
 logger = Logger('demo')
-logger.info('This is the description', 'value 0', 'value 1', 99)
+logger.do_info('do something')
+time.sleep(1)
+logger.done('ok')
 ```
-Result
+
+Output
 ```Batchfile
-[20210501 12:10:01][demo] This is the description [value 0] [value 1] [99]
+[08.30 10:36:57][logger] do something ... ok
 ```
 
 ### Handler
@@ -131,3 +136,6 @@ In this demo, the log message will display on the screen.
 Also you can find it in local file.
 
 You can check all the demo in [demo.py](https://github.com/PttCodingMan/SingleLog/blob/master/demo.py).
+
+## License
+MIT License
