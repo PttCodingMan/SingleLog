@@ -28,6 +28,6 @@ setup(
     keywords=['log', 'logger', 'library'],
 
     python_requires='>=3.8',
-    packages=['AutoStrEnum'],
-    install_requires=[],
+    packages=['SingleLog'],
+    install_requires=['AutoStrEnum'],
 )
