@@ -5,4 +5,5 @@ include README.md
 recursive-include SingleLog *
 
 exclude MANIFEST.in
-exclude README.md
+exclude setup.cfg
+exclude *.pyc
