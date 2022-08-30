@@ -130,3 +130,4 @@ dmypy.json
 .idea/
 /single_log.txt
 venv*/
+*.txt
