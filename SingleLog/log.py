@@ -6,7 +6,7 @@ import os
 import threading
 from enum import IntEnum, auto
 from time import strftime
-from typing import Callable
+from typing import Callable, List
 
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
@@ -55,7 +55,7 @@ default_key_word_fails = ['fail', 'false', 'f', 'error', 'e', 'no', 'n', 'bug']
 class SingleLog:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
-                 skip_repeat: bool = False, handler: Callable = None, od_end: str = ' ... ',
+                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, od_end: str = ' ... ',
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
                  key_word_fails: [list | None] = None):
         """
@@ -105,18 +105,24 @@ class SingleLog:
         self._log_status = LoggerStatus.FINISH
         self._last_msg = None
 
+    def _if_do_new_line(self):
+        if self._log_status == LoggerStatus.DOING:
+            print()
+
     def info(self, *msg):
+        self._if_do_new_line()
         self._log(LogLevel.INFO, *msg)
 
     def debug(self, *msg):
+        self._if_do_new_line()
         self._log(LogLevel.DEBUG, *msg)
 
     def trace(self, *msg):
+        self._if_do_new_line()
         self._log(LogLevel.TRACE, *msg)
 
     def _do(self, log_level: LogLevel, *msg):
-        if self._log_status == LoggerStatus.DOING:
-            print()
+        self._if_do_new_line()
         self._log_status = LoggerStatus.DOING
         self._log(log_level, *msg)
         self._do_level = log_level
