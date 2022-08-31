@@ -192,14 +192,14 @@ class SingleLog:
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
-        if self.status == LoggerStatus.DOING:
+        if self.status == LoggerStatus.FINISH:
             # works like normal logger
             self._do(LogLevel.INFO, *msg)
         elif self.status == LoggerStatus.TAIL or self.status == LoggerStatus.STAGE:
             self.status = LoggerStatus.STAGE
             self._log(self._do_level, *msg)
         else:
-            raise Exception('Unknown log status')
+            raise Exception(f'Unknown log status {self.status}')
 
     def __del__(self):
         global enable_loggers
@@ -265,7 +265,7 @@ class SingleLog:
                         logger.status = LoggerStatus.FINISH
 
                     if add_new_line:
-                        old_print('.')
+                        old_print()
                 else:
                     _if_do_new_line(self)
             is_first_print = False
