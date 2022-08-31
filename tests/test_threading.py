@@ -41,4 +41,4 @@ def test_threading_with_print():
 
 
 if __name__ == '__main__':
-    test_threading_with_print()
+    test_threading()
