@@ -165,6 +165,7 @@ logger.stage('1')
 
 ### Stage Color
 You can change stage color.
+You can find the more color information from [Colorama](https://github.com/tartley/colorama).
 
 ```python
 from colorama import Fore
