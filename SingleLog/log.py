@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import builtins
 import inspect
-import json
 import os
 import threading
 from enum import IntEnum, auto
@@ -12,28 +11,11 @@ from typing import Callable, List, Set
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
 
+from SingleLog.utils import _merge
+
 init(autoreset=True)
 
 global_lock = threading.Lock()
-
-
-def _merge(msg, frame: bool = True) -> str:
-    if isinstance(msg, (list, dict)):
-        msg = f'{json.dumps(msg, indent=2, ensure_ascii=False)}'
-    elif isinstance(msg, tuple):
-        msg = f'{json.dumps(msg, indent=2, ensure_ascii=False)}'
-        msg = msg[1:-1]
-        if frame:
-            msg = f'({msg})'
-    else:
-        if isinstance(msg, str):
-            pass
-        else:
-            msg = str(msg)
-        if frame:
-            msg = f'[{msg}]'
-
-    return msg
 
 
 class LogLevel(IntEnum):
@@ -57,6 +39,7 @@ default_key_word_fails = ['fail', 'false', 'error', 'bug']
 default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 enable_loggers: Set[SingleLog] = set()
 is_first_print = True
+
 old_print = builtins.print
 
 
@@ -66,38 +49,6 @@ def set_other_logger_finish(current_logger: SingleLog = None):
         if logger is current_logger:
             continue
         logger.status = LoggerStatus.FINISH
-
-
-def _if_do_new_line(current_logger: SingleLog = None):
-    global enable_loggers
-
-    # what situation we print a new line
-    # 1. if next print is a default print
-    # 2. the current logger.status is doing
-
-    print_new_line = False
-    for i, logger in enumerate(enable_loggers):
-        if not print_new_line:
-            if current_logger is not None:
-                # if current logger is doing and there is some logger status is STAGE or TAIL or DOING
-                # we print a new line
-                # old_print('.', current_logger.status)
-                if current_logger.status != LoggerStatus.DOING:
-                    continue
-                if logger.status in [LoggerStatus.STAGE, LoggerStatus.TAIL, LoggerStatus.DOING]:
-                    old_print()
-                    print_new_line = True
-            else:
-                # for default print
-                # if there is some logger status is STAGE or TAIL
-                # we print a new line
-                if logger.status in [LoggerStatus.STAGE, LoggerStatus.TAIL, LoggerStatus.DOING]:
-                    old_print()
-                    print_new_line = True
-
-        if logger is not current_logger:
-            # we don't check this anymore
-            logger.status = LoggerStatus.FINISH
 
 
 def new_print(*args, **kwargs):
