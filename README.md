@@ -86,7 +86,7 @@ from SingleLog import Logger
 logger = Logger('demo')
 logger.do_info('do something')
 time.sleep(1)
-logger.done('ok')
+logger.stage('ok')
 ```
 
 Output
