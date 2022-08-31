@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import builtins
 import inspect
 import json
 import os
 import threading
 from enum import IntEnum, auto
 from time import strftime
-from typing import Callable, List
+from typing import Callable, List, Set
 
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
@@ -43,19 +44,75 @@ class LogLevel(IntEnum):
 
 class LoggerStatus(AutoStrEnum):
     DOING = auto()
-    DONE = auto()
+    TAIL = auto()
+    STAGE = auto()
 
     FINISH = auto()
 
 
-default_key_word_success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'okey', 'true', 't', 'complete', 'pass']
-default_key_word_fails = ['fail', 'false', 'f', 'error', 'e', 'no', 'n', 'bug']
+default_key_word_success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'true', 'complete', 'pass']
+default_key_word_fails = ['fail', 'false', 'error', 'bug']
+enable_loggers: Set[SingleLog] = set()
+is_first_print = True
+old_print = builtins.print
+
+
+def set_other_logger_finish(current_logger: SingleLog = None):
+    global enable_loggers
+    for logger in enable_loggers:
+        if logger is current_logger:
+            continue
+        logger.status = LoggerStatus.FINISH
+
+
+def _if_do_new_line(current_logger: SingleLog = None):
+    global enable_loggers
+
+    # what situation we print a new line
+    # 1. if next print is a default print
+    # 2. the current logger.status is doing
+
+    print_new_line = False
+    for i, logger in enumerate(enable_loggers):
+        if not print_new_line:
+            if current_logger is not None:
+                # if current logger is doing and there is some logger status is STAGE or TAIL or DOING
+                # we print a new line
+                # old_print('.', current_logger.status)
+                if current_logger.status != LoggerStatus.DOING:
+                    continue
+                if logger.status in [LoggerStatus.STAGE, LoggerStatus.TAIL, LoggerStatus.DOING]:
+                    old_print()
+                    print_new_line = True
+            else:
+                # for default print
+                # if there is some logger status is STAGE or TAIL
+                # we print a new line
+                if logger.status in [LoggerStatus.STAGE, LoggerStatus.TAIL, LoggerStatus.DOING]:
+                    old_print()
+                    print_new_line = True
+
+        if logger is not current_logger:
+            # we don't check this anymore
+            logger.status = LoggerStatus.FINISH
+
+
+def new_print(*args, **kwargs):
+    _if_do_new_line()
+    old_print(*args, **kwargs)
+    if kwargs.get('end', '') == '\n':
+        set_other_logger_finish()
+    global is_first_print
+    is_first_print = False
+
+
+builtins.print = new_print
 
 
 class SingleLog:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
-                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, od_end: str = ' ... ',
+                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = ' ... ',
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
                  key_word_fails: [list | None] = None):
         """
@@ -65,7 +122,7 @@ class SingleLog:
         :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
-        :param od_end: (Optional) the end of the output msg.
+        :param stage_sep: (Optional) the separator of stage.
         :param key_word_success: (Optional) the key words of success.
         :param key_word_fails: (Optional) the key words of fails.
         """
@@ -92,7 +149,7 @@ class SingleLog:
         self.skip_repeat = skip_repeat
         self.timestamp = timestamp
 
-        self.do_end = od_end
+        self.stage_sep = stage_sep
 
         if key_word_success is None:
             key_word_success = default_key_word_success
@@ -102,55 +159,51 @@ class SingleLog:
             key_word_fails = default_key_word_fails
         self.key_word_fails = key_word_fails
 
-        self._log_status = LoggerStatus.FINISH
-        self._last_msg = None
+        self._stage_count = 0
+        self._color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 
-    def _if_do_new_line(self):
-        if self._log_status == LoggerStatus.DOING:
-            print()
+        self.status = LoggerStatus.FINISH
+        self._last_msg = None
+        self._do_level = None
+        self._add_new_line = False
+
+        global enable_loggers
+        enable_loggers.add(self)
 
     def info(self, *msg):
-        self._if_do_new_line()
-        self._log(LogLevel.INFO, *msg)
-
-    def debug(self, *msg):
-        self._if_do_new_line()
-        self._log(LogLevel.DEBUG, *msg)
-
-    def trace(self, *msg):
-        self._if_do_new_line()
-        self._log(LogLevel.TRACE, *msg)
-
-    def _do(self, log_level: LogLevel, *msg):
-        self._if_do_new_line()
-        self._log_status = LoggerStatus.DOING
-        self._log(log_level, *msg)
-        self._do_level = log_level
-
-    def do_info(self, *msg):
         self._do(LogLevel.INFO, *msg)
 
-    def do_debug(self, *msg):
+    def debug(self, *msg):
         self._do(LogLevel.DEBUG, *msg)
 
-    def do_trace(self, *msg):
+    def trace(self, *msg):
         self._do(LogLevel.TRACE, *msg)
 
-    def done(self, *msg):
+    def _do(self, log_level: LogLevel, *msg):
+        self.status = LoggerStatus.DOING
+        if self._log(log_level, *msg):
+            self.status = LoggerStatus.TAIL
+            self._do_level = log_level
+
+    def stage(self, *msg):
         # its log level is the same as the last do_level
-
-        if self._log_status == LoggerStatus.FINISH:
+        if self.status == LoggerStatus.DOING:
             # works like normal logger
-            self._log(LogLevel.INFO, *msg)
-        else:
-            self._log_status = LoggerStatus.DONE
+            self._do(LogLevel.INFO, *msg)
+        elif self.status == LoggerStatus.TAIL or self.status == LoggerStatus.STAGE:
+            self.status = LoggerStatus.STAGE
             self._log(self._do_level, *msg)
-            self._log_status = LoggerStatus.FINISH
+        else:
+            raise Exception('Unknown log status')
 
-    def _log(self, log_level: LogLevel, *msg):
+    def __del__(self):
+        global enable_loggers
+        enable_loggers.remove(self)
+
+    def _log(self, log_level: LogLevel, *msg) -> bool:
 
         if self.log_level > log_level:
-            return
+            return False
 
         if 0 == (msg_size := len(msg)):
             msg = ' '
@@ -173,10 +226,10 @@ class SingleLog:
 
         if self.skip_repeat:
             if self._last_msg == message:
-                return
+                return False
             self._last_msg = message
 
-        if self._log_status == LoggerStatus.DONE:
+        if self.status == LoggerStatus.STAGE:
             color = ''
             for s in self.key_word_success:
                 if s in message.lower():
@@ -189,14 +242,25 @@ class SingleLog:
                         color = Fore.RED
                         break
 
-            total_message = f'{color}{message}'
+            if not color:
+                color = self._color_list[self._stage_count]
+                self._stage_count = (self._stage_count + 1) % len(self._color_list)
+
+            total_message = f' {self.stage_sep} {color}{message}'
         else:
+            global is_first_print
+            if not is_first_print:
+                if self.status == LoggerStatus.DOING:
+                    old_print()
+                else:
+                    _if_do_new_line(self)
+            is_first_print = False
+
+            # _if_do_new_line(self)
             timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
             location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
             total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
-
-        cur_end = self.do_end if self._log_status == LoggerStatus.DOING else os.linesep
 
         with global_lock:
 
@@ -211,13 +275,15 @@ class SingleLog:
                         handler(total_message)
 
             try:
-                print(total_message, end=cur_end)
+                old_print(total_message, end='')
             except UnicodeEncodeError:
                 total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
                 try:
-                    print(total_message, end=cur_end)
+                    old_print(total_message, end='')
                 except UnicodeEncodeError:
-                    print('sorry, SingleLog can not print the message')
+                    old_print('sorry, SingleLog can not print the message')
+
+        return True
 
 
 class Logger(SingleLog):
