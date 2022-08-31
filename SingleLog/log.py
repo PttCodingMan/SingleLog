@@ -1,9 +1,8 @@
-
 from .SingleLog import Logger, LogLevel
 
 
+# old way of calling
 class Logger(Logger):
-    # the old logger
     TRACE = LogLevel.TRACE
     DEBUG = LogLevel.DEBUG
     INFO = LogLevel.INFO

@@ -11,7 +11,8 @@ from typing import Callable, List, Set
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
 
-from SingleLog.utils import _merge
+from SingleLog import utils
+from SingleLog.utils import merge_msg, old_print
 
 init(autoreset=True)
 
@@ -39,8 +40,6 @@ default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYA
 enable_loggers: Set[Logger] = set()
 is_first_print = True
 
-old_print = builtins.print
-
 
 def set_other_logger_finish(current_logger: Logger = None):
     global enable_loggers
@@ -67,7 +66,7 @@ class Logger:
         Init of Logger.
         :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
-        :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
+        :param handler: (Optional) the handlers of current logger. you can get the output msg from the handlers.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
         :param stage_sep: (Optional) the separator of stage.
@@ -87,14 +86,15 @@ class Logger:
 
         self.log_level = log_level
 
+        self.handlers = []
         if handler is not None:
             if not isinstance(handler, list):
                 handler = [handler]
             for h in handler:
                 if not callable(h):
                     raise TypeError('Handler must be callable!!')
+            self.handlers = handler
 
-        self.handler = handler
         self.skip_repeat = skip_repeat
         self.timestamp = timestamp
 
@@ -137,7 +137,7 @@ class Logger:
         if self.status != LoggerStatus.FINISH:
             self.check_add_new_line = True
         self.status = LoggerStatus.START
-        if self._log(log_level, *msg):
+        if self._start(log_level, *msg):
             self.status = LoggerStatus.STAGE
             self._do_level = log_level
         elif not self.check_add_new_line:
@@ -149,7 +149,7 @@ class Logger:
             # works like normal logger
             self._do(LogLevel.INFO, *msg)
         elif self.status == LoggerStatus.STAGE:
-            self._log(self._do_level, *msg)
+            self._stage(self._do_level, *msg)
         else:
             raise Exception(f'Unknown log status {self.status}')
 
@@ -158,7 +158,7 @@ class Logger:
             global enable_loggers
             enable_loggers.remove(self)
 
-    def _check_output(self, log_level: LogLevel, *msg) -> bool:
+    def _check_log_level(self, log_level: LogLevel) -> bool:
         # check the msg will be output or not
 
         if self.status == LoggerStatus.PRINT:
@@ -169,58 +169,69 @@ class Logger:
 
         return True
 
-    def _log(self, log_level: LogLevel, *msg, **kwargs) -> bool:
-
-        if not self._check_output(log_level, *msg):
+    def _stage(self, log_level: LogLevel, msg):
+        if not self._check_log_level(log_level):
             return False
 
+        if self.status != LoggerStatus.STAGE:
+            raise Exception(f'Unknown log status {self.status}')
+
+        message = str(msg)
+
+        color = ''
+        for s in self.key_word_success:
+            if s in message.lower():
+                color = Fore.GREEN
+                break
+
+        if not color:
+            for s in self.key_word_fails:
+                if s in message.lower():
+                    color = Fore.RED
+                    break
+
+        if not color:
+            color = self._stage_color_list[self._stage_count]
+            self._stage_count = (self._stage_count + 1) % len(self._stage_color_list)
+
+        total_message = f' {self.stage_sep} {color}{message}'
+
+        utils.output_screen(total_message)
+        utils.output_file(self.handlers, total_message)
+
+    def _start(self, log_level: LogLevel, *msg, **kwargs) -> bool:
+
+        if not self._check_log_level(log_level):
+            return False
+
+        total_message = None
         if self.status != LoggerStatus.PRINT:
 
             if not msg:
                 msg = ' '
 
-            message = f'{_merge(msg[0], frame=False)}'
+            message = f'{merge_msg(msg[0], frame=False)}'
             for m in msg[1:]:
-                message = f'{message} {_merge(m)}'
+                message = f'{message} {merge_msg(m)}'
 
             if self.skip_repeat:
                 if self._last_msg == message:
                     return False
                 self._last_msg = message
 
-            if self.status == LoggerStatus.STAGE:
-                color = ''
-                for s in self.key_word_success:
-                    if s in message.lower():
-                        color = Fore.GREEN
-                        break
+            line_no = None
+            file_name = None
+            if self.log_level <= LogLevel.DEBUG:
+                cf = inspect.currentframe()
+                line_no = cf.f_back.f_back.f_lineno
+                file_name = cf.f_back.f_back.f_code.co_filename
+                file_name = os.path.basename(file_name)
 
-                if not color:
-                    for s in self.key_word_fails:
-                        if s in message.lower():
-                            color = Fore.RED
-                            break
+            if self.status != LoggerStatus.PRINT:
+                timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+                location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-                if not color:
-                    color = self._stage_color_list[self._stage_count]
-                    self._stage_count = (self._stage_count + 1) % len(self._stage_color_list)
-
-                total_message = f' {self.stage_sep} {color}{message}'
-            else:
-
-                line_no = None
-                file_name = None
-                if self.log_level <= LogLevel.DEBUG:
-                    cf = inspect.currentframe()
-                    line_no = cf.f_back.f_back.f_lineno
-                    file_name = cf.f_back.f_back.f_code.co_filename
-                    file_name = os.path.basename(file_name)
-
-                if self.status != LoggerStatus.PRINT:
-                    timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-                    location = f'[{file_name} {line_no}]' if line_no is not None else ''
-
-                    total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+                total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
         with global_lock:
 
@@ -250,24 +261,9 @@ class Logger:
             if self.status == LoggerStatus.PRINT:
                 old_print(*msg, **kwargs)
                 return True
-            try:
-                old_print(total_message, **kwargs)
-            except UnicodeEncodeError:
-                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
-                try:
-                    old_print(total_message, **kwargs)
-                except UnicodeEncodeError:
-                    old_print('sorry, Logger can not print the message')
 
-            try:
-                if self.handler:
-                    for handler in self.handler:
-                        handler(total_message)
-            except UnicodeEncodeError:
-                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
-                if self.handler:
-                    for handler in self.handler:
-                        handler(total_message)
+            utils.output_screen(total_message)
+            utils.output_file(self.handlers, total_message)
 
             return True
 
@@ -275,7 +271,7 @@ class Logger:
 class PrintLogger(Logger):
     def print(self, *args, **kwargs):
         self.status = LoggerStatus.PRINT
-        self._log(LogLevel.INFO, *args, **kwargs)
+        self._start(LogLevel.INFO, *args, **kwargs)
 
 
 print_logger = PrintLogger(log_name='', timestamp=None)
