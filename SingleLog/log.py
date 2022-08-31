@@ -165,7 +165,8 @@ class SingleLog:
         self.status = LoggerStatus.FINISH
         self._last_msg = None
         self._do_level = None
-        self._add_new_line = False
+        self.check_add_new_line = False
+
 
         global enable_loggers
         enable_loggers.add(self)
@@ -180,10 +181,14 @@ class SingleLog:
         self._do(LogLevel.TRACE, *msg)
 
     def _do(self, log_level: LogLevel, *msg):
+        if self.status != LoggerStatus.FINISH:
+            self.check_add_new_line = True
         self.status = LoggerStatus.DOING
         if self._log(log_level, *msg):
             self.status = LoggerStatus.TAIL
             self._do_level = log_level
+        elif not self.check_add_new_line:
+            self.status = LoggerStatus.FINISH
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
@@ -251,7 +256,16 @@ class SingleLog:
             global is_first_print
             if not is_first_print:
                 if self.status == LoggerStatus.DOING:
-                    old_print()
+
+                    add_new_line = False or self.check_add_new_line
+                    self.check_add_new_line = False
+                    for logger in enable_loggers:
+                        if logger != self and logger.status != LoggerStatus.FINISH:
+                            add_new_line = True
+                        logger.status = LoggerStatus.FINISH
+
+                    if add_new_line:
+                        old_print('.')
                 else:
                     _if_do_new_line(self)
             is_first_print = False
