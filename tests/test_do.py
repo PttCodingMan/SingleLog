@@ -7,20 +7,23 @@ from SingleLog import Logger, LogLevel
 
 
 def test_do():
-    logger = Logger('test_do')
+    logger = Logger('rocket')
 
-    logger.do_info('do something success')
-    time.sleep(0.5)
-    logger.done('ok')
+    logger.info('Init rocket launch proces')
+    # time.sleep(1.5)
+    logger.stage('complete!')
 
-    logger.do_info('do something fails')
-    time.sleep(0.5)
-    logger.done('fails')
+    logger.info('Start the countdown')
+    # time.sleep(1)
+    logger.stage('3')
+    # time.sleep(1)
+    logger.stage('2')
+    # time.sleep(1)
+    logger.stage('1')
+    # time.sleep(1)
+    logger.stage('fire!')
+    logger.info('Launch complete')
 
-    print('=' * 20)
 
-    logger = Logger(log_level=LogLevel.INFO)
-
-    logger.do_debug('do something success')
-    time.sleep(0.5)
-    logger.done('DEBUG')
+if __name__ == '__main__':
+    test_do()
