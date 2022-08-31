@@ -1,8 +1,9 @@
 # SingleLog
 [![Package Version](https://img.shields.io/pypi/v/SingleLog.svg)](https://pypi.python.org/pypi/SingleLog)
+[![test](https://github.com/PttCodingMan/SingleLog/actions/workflows/test.yml/badge.svg)](https://github.com/PttCodingMan/SingleLog/actions/workflows/test.yml)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/SingleLog)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
-[![Python package](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml/badge.svg)](https://github.com/PttCodingMan/SingleLog/actions/workflows/python-package.yml)
+
 
 ### A single python logger, super easy to use and thread safe.
 
@@ -11,52 +12,37 @@
 pip install SingleLog -U
 ```
 
-## Tutorials
-### Init
-```python
-from SingleLog import Logger
-from SingleLog import LogLevel
-
-log_level = LogLevel.INFO # default
-# log_level = LogLevel.DEBUG
-# log_level = LogLevel.TRACE
-logger = Logger('demo', log_level)
-```
-```
-### Display
+## Basic Usage
 ```python
 from SingleLog import Logger
 
 logger = Logger('demo')
 
-logger.info(1)
-logger.debug(2)
-logger.trace(3)
-```
-Result
-```Batchfile
-[20210501 11:19:48][demo] 1
+logger.info('hello world')
 ```
 
-When the log level is set to ```LogLevel.DEBUG``` or ```LogLevel.TRACE```, the location will be displayed.
+### Log Levels
+You can set the [LogLevel](https://github.com/PttCodingMan/SingleLog/blob/master/SingleLog/log.py) of the logger.
+
+- `info`: Confirmation that things are working as expected.
+- `debug`: Detailed information, usually of interest only when diagnosing problems.
+- `trace`: Detailed information on the flow through the system.
+
 
 ```python
 from SingleLog import Logger
 from SingleLog import LogLevel
 
-logger = Logger('demo', LogLevel.TRACE)
-logger.info('This is the description', 'demo')
-logger.debug('This is the description', 'demo')
-logger.trace('This is the description', 'demo')
-```
-Result
-```Batchfile
-[20211104 09:13:16][demo][demo.py 6] This is the description [demo]
-[20211104 09:13:16][demo][demo.py 7] This is the description [demo]
-[20211104 09:13:16][demo][demo.py 8] This is the description [demo]
+logger = Logger('demo', log_level=LogLevel.DEBUG)
+
+logger.info('you can see it, when log_level is set to INFO, DEBUG and TRACE')
+logger.debug('you can see it, when log_level is set to DEBUG and TRACE')
+logger.trace('you can see it, when log_level is set to TRACE')
 ```
 
-SingleLog Supports some common types to display in format. Such as list, dict and tuple.
+## Data automatically format
+SingleLog Supports some common types to display in format. Such as list, dict and tuple etc.
+
 ```python
 from SingleLog import Logger
 
@@ -74,45 +60,52 @@ Result
   "1": "value1",
   "2": "value2"
 }
-
 ```
 
-Supports the `do` method that you can call it, when you finish the work.
+### Stage method
+You can use stage method to display the log.
 
 ```python
 import time
 from SingleLog import Logger
 
-logger = Logger('demo')
-logger.do_info('do something')
+logger = Logger('rocket')
+
+logger.info('Init rocket launch proces')
+time.sleep(1.5)
+logger.stage('complete!')
+
+logger.info('Start the countdown')
 time.sleep(1)
-logger.stage('ok')
+logger.stage('3')
+time.sleep(1)
+logger.stage('2')
+time.sleep(1)
+logger.stage('1')
+time.sleep(1)
+logger.stage('fire!')
+logger.info('Launch complete')
 ```
 
-Output
-```Batchfile
-[08.30 10:36:57][logger] do something ... ok
-```
+![](https://imgur.com/rKs6N2I.jpeg)
 
-### Handler
-Sometimes, you want to catch the log message at higher level.  
-Use log handler.
+### Logger Handler
+You can use logger handler to handle the log.
 ```python
 from SingleLog import Logger
-from SingleLog import LogLevel
 
 def log_to_file(msg):
     with open('single_log.txt', 'a', encoding='utf8') as f:
         f.write(f'{msg}\n')
 
 
-logger = Logger('INFO', LogLevel.INFO, handler=log_to_file)
+logger = Logger('Handle', handler=log_to_file)
 
 logger.info('1')
 logger.info(2)
 logger.info('show value', 456)
 ```
-Handler can also be a list.
+Handler also supports list.
 ```python
 from SingleLog import Logger
 from SingleLog import LogLevel
@@ -133,9 +126,7 @@ logger.info(2)
 logger.info('show value', 456)
 ```
 In this demo, the log message will display on the screen.  
-Also you can find it in local file.
-
-You can check all the demo in [demo.py](https://github.com/PttCodingMan/SingleLog/blob/master/demo.py).
+Also you can find it in single_log.txt and single_log_2.txt.
 
 ## License
 MIT License
