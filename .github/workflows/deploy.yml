@@ -16,13 +16,11 @@ on:
       - completed
 jobs:
   on-test-failure:
-    needs: test
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - run: echo 'Don't worry, everything will be fine.'
   deploy:
-    needs: test
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
