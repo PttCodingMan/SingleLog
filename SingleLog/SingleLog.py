@@ -272,6 +272,7 @@ class PrintLogger(Logger):
     def print(self, *args, **kwargs):
         self.status = LoggerStatus.PRINT
         self._start(LogLevel.INFO, *args, **kwargs)
+        set_other_logger_finish(self)
 
 
 print_logger = PrintLogger(log_name='', timestamp=None)
