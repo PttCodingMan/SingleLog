@@ -207,32 +207,34 @@ class SingleLog:
             enable_loggers.remove(self)
 
     def _log(self, log_level: LogLevel, *msg, **kwargs) -> bool:
-        if self.log_level > log_level:
-            return False
 
-        if 0 == (msg_size := len(msg)):
-            msg = ' '
-
-        if self.log_level <= LogLevel.DEBUG:
-            cf = inspect.currentframe()
-            line_no = cf.f_back.f_back.f_lineno
-            file_name = cf.f_back.f_back.f_code.co_filename
-            file_name = os.path.basename(file_name)
-        else:
-            line_no = None
-            file_name = None
-
-        message = ''
-        for m in msg:
-            if not message:
-                message = f'{message}{_merge(m, frame=False)}'
-            else:
-                message = f'{message} {_merge(m)}'
-
-        if self.skip_repeat:
-            if self._last_msg == message:
+        if self.status != LoggerStatus.PRINT:
+            if self.log_level > log_level:
                 return False
-            self._last_msg = message
+
+            if 0 == (msg_size := len(msg)):
+                msg = ' '
+
+            if self.log_level <= LogLevel.DEBUG:
+                cf = inspect.currentframe()
+                line_no = cf.f_back.f_back.f_lineno
+                file_name = cf.f_back.f_back.f_code.co_filename
+                file_name = os.path.basename(file_name)
+            else:
+                line_no = None
+                file_name = None
+
+            message = ''
+            for m in msg:
+                if not message:
+                    message = f'{message}{_merge(m, frame=False)}'
+                else:
+                    message = f'{message} {_merge(m)}'
+
+            if self.skip_repeat:
+                if self._last_msg == message:
+                    return False
+                self._last_msg = message
 
         with global_lock:
 
@@ -276,9 +278,7 @@ class SingleLog:
                         old_print()
                 is_first_print = False
 
-                if self.status == LoggerStatus.PRINT:
-                    total_message = f'{message}'
-                else:
+                if self.status != LoggerStatus.PRINT:
                     timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
                     location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
@@ -296,14 +296,18 @@ class SingleLog:
                             handler(total_message)
 
             kwargs['end'] = ''
-            try:
-                old_print(total_message, **kwargs)
-            except UnicodeEncodeError:
-                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
+
+            if self.status == LoggerStatus.PRINT:
+                old_print(*msg, **kwargs)
+            else:
                 try:
                     old_print(total_message, **kwargs)
                 except UnicodeEncodeError:
-                    old_print('sorry, SingleLog can not print the message')
+                    total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
+                    try:
+                        old_print(total_message, **kwargs)
+                    except UnicodeEncodeError:
+                        old_print('sorry, SingleLog can not print the message')
 
             return True
 
