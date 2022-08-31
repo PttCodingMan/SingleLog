@@ -78,37 +78,35 @@ def test_old():
 
     print('=' * 20)
 
-    enable_handler_test = False
-    if enable_handler_test:
-        def log_to_file(msg):
-            with open('./single_log_1.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{msg}\n')
+    def log_to_file(msg):
+        with open('./single_log_1.txt', 'a', encoding='utf-8') as f:
+            f.write(f'{msg}\n')
 
-        def log_to_file2(msg):
-            with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{msg}\n')
+    def log_to_file2(msg):
+        with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
+            f.write(f'{msg}\n')
 
-        logger = Logger('INFO', Logger.INFO, handler=[log_to_file, log_to_file2])
+    logger = Logger('INFO', Logger.INFO, handler=[log_to_file, log_to_file2])
 
-        logger.info('1')
-        logger.info(2)
-        logger.info('show value', 456)
+    logger.info('1')
+    logger.info(2)
+    logger.info('show value', 456)
 
-    enable_threading_test = False
-    if enable_threading_test:
+    import threading
 
-        import threading
+    def thread_log(thread_id):
+        current_logger = Logger(f'logger-{thread_id}')
+        for i in range(1000):
+            current_logger.info('show', i)
 
-        def thread_log(thread_id):
-            current_logger = Logger(f'logger-{thread_id}')
-            for i in range(1000):
-                current_logger.info('show', i)
+    thread_list = list()
+    for i in range(100):
+        t = threading.Thread(target=thread_log, args=(i,))
+        thread_list.append(t)
+        t.start()
 
-        thread_list = list()
-        for i in range(100):
-            t = threading.Thread(target=thread_log, args=(i,))
-            thread_list.append(t)
-            t.start()
+    for t in thread_list:
+        t.join()
 
-        for t in thread_list:
-            t.join()
+if __name__ == '__main__':
+    test_old()
