@@ -37,13 +37,13 @@ class LoggerStatus(AutoStrEnum):
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug']
 default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
-enable_loggers: Set[SingleLog] = set()
+enable_loggers: Set[Logger] = set()
 is_first_print = True
 
 old_print = builtins.print
 
 
-def set_other_logger_finish(current_logger: SingleLog = None):
+def set_other_logger_finish(current_logger: Logger = None):
     global enable_loggers
     for logger in enable_loggers:
         if logger is current_logger:
@@ -52,20 +52,20 @@ def set_other_logger_finish(current_logger: SingleLog = None):
 
 
 def new_print(*args, **kwargs):
-    print_logger._print(*args, **kwargs)
+    print_logger.print(*args, **kwargs)
 
 
 builtins.print = new_print
 
 
-class SingleLog:
+class Logger:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
                  skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = '...',
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
                  key_word_fails: [list | None] = None, stage_color_list: [List[Fore] | None] = None):
         """
-        Init of SingleLog.
+        Init of Logger.
         :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
         :param handler: (Optional) the handler of current logger. you can get the output msg from the handler.
@@ -74,6 +74,7 @@ class SingleLog:
         :param stage_sep: (Optional) the separator of stage.
         :param key_word_success: (Optional) the key words of success.
         :param key_word_fails: (Optional) the key words of fails.
+        :param stage_color_list: (Optional) the color list of stage.
         """
 
         self.log_name = log_name
@@ -132,10 +133,6 @@ class SingleLog:
 
     def trace(self, *msg):
         self._do(LogLevel.TRACE, *msg)
-
-    def _print(self, *args, **kwargs):
-        self.status = LoggerStatus.PRINT
-        self._log(LogLevel.INFO, *args, **kwargs)
 
     def _do(self, log_level: LogLevel, *msg):
         if self.status != LoggerStatus.FINISH:
@@ -264,57 +261,16 @@ class SingleLog:
                     try:
                         old_print(total_message, **kwargs)
                     except UnicodeEncodeError:
-                        old_print('sorry, SingleLog can not print the message')
+                        old_print('sorry, Logger can not print the message')
 
             return True
 
 
-print_logger = SingleLog(log_name='', timestamp=None)
+class PrintLogger(Logger):
+    def print(self, *args, **kwargs):
+        self.status = LoggerStatus.PRINT
+        self._log(LogLevel.INFO, *args, **kwargs)
+
+
+print_logger = PrintLogger(log_name='', timestamp=None)
 enable_loggers.add(print_logger)
-
-
-class Logger(SingleLog):
-    # the old logger
-    TRACE = LogLevel.TRACE
-    DEBUG = LogLevel.DEBUG
-    INFO = LogLevel.INFO
-    SILENT = LogLevel.SILENT
-
-#                        ____________
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#  _____________________|            |_____________________
-# |                                                        |
-# |                                                        |
-# |                                                        |
-# |_____________________              _____________________|
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |            |
-#                       |____________|
-
-
-# 耶和華是我的牧者，我必不致缺乏。
-# 他使我躺臥在青草地上，領我在可安歇的水邊。
-# 他使我的靈魂甦醒，為自己的名引導我走義路。
-# 我雖然行過死蔭的幽谷，也不怕遭害，因為你與我同在；你的杖，你的竿，都安慰我。
-# 在我敵人面前，你為我擺設筵席；你用油膏了我的頭，使我的福杯滿溢。
-# 我一生一世必有恩惠慈愛隨著我；我且要住在耶和華的殿中，直到永遠。
-# - 詩篇 23篇

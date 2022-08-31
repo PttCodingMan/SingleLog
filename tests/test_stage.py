@@ -1,8 +1,6 @@
 import sys
 import time
 
-from colorama import Fore
-
 sys.path.insert(0, '../')
 
 from SingleLog import Logger
@@ -34,7 +32,7 @@ def test_stage():
 
 
 def test_stage_2():
-    logger = Logger('demo', stage_color_list=[Fore.GREEN, Fore.YELLOW])
+    logger = Logger('demo')
 
     logger.info('start')
     for i in range(10):
