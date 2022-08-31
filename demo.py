@@ -9,9 +9,7 @@ if __name__ == '__main__':
     logger.info('')
 
     logger.info('type', type(''))
-    print('===')
     logger.info('ok', '123 ', ' 456')
-    print('===')
     logger.info([101, 102, 103])
 
     logger.info('data', {'1': 'value1', '2': 'value2'})
@@ -65,9 +63,9 @@ if __name__ == '__main__':
     print('=' * 20)
 
     logger = Logger('test', skip_repeat=True)
-    logger.info('This should only print once', 'and its a silent msg on top')
-    logger.info('This should only print once', 'and its a silent msg on top')
-    logger.info('This should only print once', 'and its a silent msg on top')
+    logger.info('This should only print once', 'and its three silent msg on top')
+    logger.info('This should only print once', 'and its three silent msg on top')
+    logger.info('This should only print once', 'and its three silent msg on top')
 
     print('=' * 20)
 
@@ -87,59 +85,3 @@ if __name__ == '__main__':
     logger = Logger()
     logger.info('default logger print')
 
-    print('=' * 20)
-
-    logger.do_info('do something success')
-    time.sleep(0.5)
-    logger.done('ok')
-
-    logger.do_info('do something fails')
-    time.sleep(0.5)
-    logger.done('fails')
-
-    print('=' * 20)
-
-    logger = Logger(log_level=LogLevel.INFO)
-
-    logger.do_debug('do something success')
-    time.sleep(0.5)
-    logger.done('DEBUG')
-
-    enable_handler_test = False
-    if enable_handler_test:
-        def log_to_file(msg):
-            with open('./single_log_1.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{msg}\n')
-
-
-        def log_to_file2(msg):
-            with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
-                f.write(f'{msg}\n')
-
-
-        logger = Logger('INFO', LogLevel.INFO, handler=[log_to_file, log_to_file2])
-
-        logger.info('1')
-        logger.info(2)
-        logger.info('show value', 456)
-
-    enable_threading_test = False
-    if enable_threading_test:
-
-        import threading
-
-
-        def thread_log(thread_id):
-            current_logger = Logger(f'logger-{thread_id}')
-            for i in range(1000):
-                current_logger.info('show', i)
-
-
-        thread_list = list()
-        for i in range(100):
-            t = threading.Thread(target=thread_log, args=(i,))
-            thread_list.append(t)
-            t.start()
-
-        for t in thread_list:
-            t.join()
