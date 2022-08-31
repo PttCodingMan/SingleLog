@@ -43,6 +43,7 @@ class LogLevel(IntEnum):
 
 
 class LoggerStatus(AutoStrEnum):
+    PRINT = auto()
     DOING = auto()
     TAIL = auto()
     STAGE = auto()
@@ -50,7 +51,7 @@ class LoggerStatus(AutoStrEnum):
     FINISH = auto()
 
 
-default_key_word_success = ['success', 'ok', 'done', 'yes', 'y', 'okay', 'true', 'complete', 'pass']
+default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug']
 enable_loggers: Set[SingleLog] = set()
 is_first_print = True
@@ -98,15 +99,7 @@ def _if_do_new_line(current_logger: SingleLog = None):
 
 
 def new_print(*args, **kwargs):
-    global global_lock
-
-    with global_lock:
-        _if_do_new_line()
-        old_print(*args, **kwargs)
-        if kwargs.get('end', '') == '\n':
-            set_other_logger_finish()
-        global is_first_print
-        is_first_print = False
+    print_logger._print(*args, **kwargs)
 
 
 builtins.print = new_print
@@ -183,6 +176,10 @@ class SingleLog:
     def trace(self, *msg):
         self._do(LogLevel.TRACE, *msg)
 
+    def _print(self, *args, **kwargs):
+        self.status = LoggerStatus.PRINT
+        self._log(LogLevel.INFO, *args, **kwargs)
+
     def _do(self, log_level: LogLevel, *msg):
         if self.status != LoggerStatus.FINISH:
             self.check_add_new_line = True
@@ -209,36 +206,35 @@ class SingleLog:
             global enable_loggers
             enable_loggers.remove(self)
 
-    def _log(self, log_level: LogLevel, *msg) -> bool:
+    def _log(self, log_level: LogLevel, *msg, **kwargs) -> bool:
+        if self.log_level > log_level:
+            return False
+
+        if 0 == (msg_size := len(msg)):
+            msg = ' '
+
+        if self.log_level <= LogLevel.DEBUG:
+            cf = inspect.currentframe()
+            line_no = cf.f_back.f_back.f_lineno
+            file_name = cf.f_back.f_back.f_code.co_filename
+            file_name = os.path.basename(file_name)
+        else:
+            line_no = None
+            file_name = None
+
+        message = ''
+        for m in msg:
+            if not message:
+                message = f'{message}{_merge(m, frame=False)}'
+            else:
+                message = f'{message} {_merge(m)}'
+
+        if self.skip_repeat:
+            if self._last_msg == message:
+                return False
+            self._last_msg = message
 
         with global_lock:
-
-            if self.log_level > log_level:
-                return False
-
-            if 0 == (msg_size := len(msg)):
-                msg = ' '
-
-            if self.log_level <= LogLevel.DEBUG:
-                cf = inspect.currentframe()
-                line_no = cf.f_back.f_back.f_lineno
-                file_name = cf.f_back.f_back.f_code.co_filename
-                file_name = os.path.basename(file_name)
-            else:
-                line_no = None
-                file_name = None
-
-            message = ''
-            for m in msg:
-                if not message:
-                    message = f'{message}{_merge(m, frame=False)}'
-                else:
-                    message = f'{message} {_merge(m)}'
-
-            if self.skip_repeat:
-                if self._last_msg == message:
-                    return False
-                self._last_msg = message
 
             if self.status == LoggerStatus.STAGE:
                 color = ''
@@ -262,7 +258,7 @@ class SingleLog:
                 global is_first_print
                 if not is_first_print:
 
-                    if self.check_add_new_line or self.status == LoggerStatus.FINISH:
+                    if self.check_add_new_line:
                         self.check_add_new_line = False
                         old_print()
                         set_other_logger_finish(self)
@@ -275,38 +271,45 @@ class SingleLog:
                             logger.status = LoggerStatus.FINISH
 
                         if add_new_line:
-                            set_other_logger_finish(self)
                             old_print()
-                    # else:
-                    #     old_print(f' !!{self.status}!! ')
+                    else:
+                        old_print()
                 is_first_print = False
 
-                # _if_do_new_line(self)
-                timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-                location = f'[{file_name} {line_no}]' if line_no is not None else ''
+                if self.status == LoggerStatus.PRINT:
+                    total_message = f'{message}'
+                else:
+                    timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+                    location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-                total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+                    total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
+            if self.status != LoggerStatus.PRINT:
+                try:
+                    if self.handler:
+                        for handler in self.handler:
+                            handler(total_message)
+                except UnicodeEncodeError:
+                    total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
+                    if self.handler:
+                        for handler in self.handler:
+                            handler(total_message)
+
+            kwargs['end'] = ''
             try:
-                if self.handler:
-                    for handler in self.handler:
-                        handler(total_message)
-            except UnicodeEncodeError:
-                total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
-                if self.handler:
-                    for handler in self.handler:
-                        handler(total_message)
-
-            try:
-                old_print(total_message, end='')
+                old_print(total_message, **kwargs)
             except UnicodeEncodeError:
                 total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
                 try:
-                    old_print(total_message, end='')
+                    old_print(total_message, **kwargs)
                 except UnicodeEncodeError:
                     old_print('sorry, SingleLog can not print the message')
 
             return True
+
+
+print_logger = SingleLog(log_name='', timestamp=None)
+enable_loggers.add(print_logger)
 
 
 class Logger(SingleLog):
