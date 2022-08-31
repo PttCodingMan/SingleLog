@@ -24,6 +24,13 @@ def test_do():
     logger.stage('fire!')
     logger.info('Launch complete')
 
+    logger.info('Init rocket launch proces, again')
+    logger.stage('complete!')
+    print('some walk in!')
+    print('aaaaaa')
+    logger.stage('1')
+
+
 
 if __name__ == '__main__':
     test_do()
