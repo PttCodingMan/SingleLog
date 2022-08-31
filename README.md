@@ -4,8 +4,9 @@
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/SingleLog)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
 
-
 ### A single python logger, super easy to use and thread safe.
+
+![](https://imgur.com/0nYvBcd.gif)
 
 ## Install
 ```
@@ -87,7 +88,7 @@ logger.stage('fire!')
 logger.info('Launch complete')
 ```
 
-![](https://imgur.com/rKs6N2I.jpeg)
+![](https://imgur.com/0nYvBcd.gif)
 
 ### Logger Handler
 You can use logger handler to handle the log.
@@ -127,6 +128,96 @@ logger.info('show value', 456)
 ```
 In this demo, the log message will display on the screen.  
 Also you can find it in single_log.txt and single_log_2.txt.
+
+## Advanced Usage
+You can use logger to display the log in different ways.
+
+### Skip Repeated Message
+You can skip repeated message.  
+The following logger will display only one message.
+
+```python
+from SingleLog import Logger
+
+logger = Logger('demo', skip_repeat=True)
+
+logger.info('hello world')
+logger.info('hello world')
+logger.info('hello world')
+```
+
+### Stage Separator
+
+You can change stage separator to display the log.
+
+```python
+import time
+from SingleLog import Logger
+
+logger = Logger('demo', stage_sep='-')
+
+logger.info('Init rocket launch proces')
+time.sleep(1.5)
+logger.stage('complete!')
+
+logger.info('Start the countdown')
+time.sleep(1)
+logger.stage('3')
+time.sleep(1)
+logger.stage('2')
+time.sleep(1)
+logger.stage('1')
+```
+
+![](https://imgur.com/6FZoLYD.jpeg)
+
+### Stage Color
+You can change stage color.
+
+```python
+from colorama import Fore
+from SingleLog import Logger
+
+logger = Logger('demo', stage_color_list = [Fore.GREEN, Fore.YELLOW])
+
+logger.info('start')
+for i in range(10):
+    logger.stage(i)
+```
+
+![](https://imgur.com/B06f3iM.jpeg)
+
+### Timestamp
+You can change timestamp format.
+
+```python
+from SingleLog import Logger
+
+logger = Logger('demo')
+logger.info('default timestamp')
+
+logger = Logger('demo', timestamp='%Y-%m-%d %H:%M:%S')
+logger.info('custom timestamp')
+```
+
+![](https://imgur.com/P0NGMf6.jpeg)
+
+### Keyword of success and failure
+You can use keyword of success and failure to display the log.  
+The keywords in `key_word_success`, will be displayed in green color.  
+The keywords in `key_word_failure`, will be displayed in red color.  
+
+```python
+from SingleLog import Logger
+
+logger = Logger('demo', key_word_success=['custom_success'], key_word_fails=['custom_fail'])
+
+logger.info('do something')
+logger.stage('custom_success')
+logger.stage('custom_fail')
+```
+
+![](https://imgur.com/fjymmFq.jpeg)
 
 ## License
 MIT License
