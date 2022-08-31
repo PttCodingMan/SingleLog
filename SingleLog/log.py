@@ -53,6 +53,7 @@ class LoggerStatus(AutoStrEnum):
 
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug']
+default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 enable_loggers: Set[SingleLog] = set()
 is_first_print = True
 old_print = builtins.print
@@ -108,9 +109,9 @@ builtins.print = new_print
 class SingleLog:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
-                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = ' ... ',
+                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = '...',
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
-                 key_word_fails: [list | None] = None):
+                 key_word_fails: [list | None] = None, stage_color_list: [List[Fore] | None] = None):
         """
         Init of SingleLog.
         :param log_name: the display name of current logger.
@@ -156,7 +157,11 @@ class SingleLog:
         self.key_word_fails = key_word_fails
 
         self._stage_count = 0
-        self._color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+
+        if stage_color_list is None:
+            self._stage_color_list = default_color_list
+        else:
+            self._stage_color_list = stage_color_list
 
         self.status = LoggerStatus.FINISH
         self._last_msg = None
@@ -252,8 +257,8 @@ class SingleLog:
                             break
 
                 if not color:
-                    color = self._color_list[self._stage_count]
-                    self._stage_count = (self._stage_count + 1) % len(self._color_list)
+                    color = self._stage_color_list[self._stage_count]
+                    self._stage_count = (self._stage_count + 1) % len(self._stage_color_list)
 
                 total_message = f' {self.stage_sep} {color}{message}'
             else:
