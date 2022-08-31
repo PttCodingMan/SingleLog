@@ -3,7 +3,7 @@ import time
 
 sys.path.insert(0, '../')
 
-from SingleLog import Logger
+from SingleLog import Logger, LogLevel
 
 
 def test_stage():
@@ -39,5 +39,24 @@ def test_stage_2():
         logger.stage(i)
 
 
+def test_stage_3():
+
+    loglevels = [
+        LogLevel.INFO,
+        LogLevel.DEBUG,
+    ]
+
+    for loglevel in loglevels:
+        logger = Logger(f'demo-{loglevel}', loglevel)
+
+        logger.debug('start')
+        for i in range(10):
+            logger.stage(i)
+            if i == 5:
+                print('someone walk in!')
+
+        logger.debug('end')
+
+
 if __name__ == '__main__':
-    test_stage_2()
+    test_stage_3()

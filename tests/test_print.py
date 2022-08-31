@@ -93,6 +93,5 @@ def test_func():
 
 
 if __name__ == '__main__':
-    # test_func()
-    print(1, 'hi', '123')
-    print(2)
+    test_func()
+
