@@ -98,12 +98,15 @@ def _if_do_new_line(current_logger: SingleLog = None):
 
 
 def new_print(*args, **kwargs):
-    _if_do_new_line()
-    old_print(*args, **kwargs)
-    if kwargs.get('end', '') == '\n':
-        set_other_logger_finish()
-    global is_first_print
-    is_first_print = False
+    global global_lock
+
+    with global_lock:
+        _if_do_new_line()
+        old_print(*args, **kwargs)
+        if kwargs.get('end', '') == '\n':
+            set_other_logger_finish()
+        global is_first_print
+        is_first_print = False
 
 
 builtins.print = new_print
@@ -167,9 +170,9 @@ class SingleLog:
         self._do_level = None
         self.check_add_new_line = False
 
-
-        global enable_loggers
-        enable_loggers.add(self)
+        with global_lock:
+            global enable_loggers
+            enable_loggers.add(self)
 
     def info(self, *msg):
         self._do(LogLevel.INFO, *msg)
@@ -202,81 +205,87 @@ class SingleLog:
             raise Exception(f'Unknown log status {self.status}')
 
     def __del__(self):
-        global enable_loggers
-        enable_loggers.remove(self)
+        with global_lock:
+            global enable_loggers
+            enable_loggers.remove(self)
 
     def _log(self, log_level: LogLevel, *msg) -> bool:
 
-        if self.log_level > log_level:
-            return False
+        with global_lock:
 
-        if 0 == (msg_size := len(msg)):
-            msg = ' '
-
-        if self.log_level <= LogLevel.DEBUG:
-            cf = inspect.currentframe()
-            line_no = cf.f_back.f_back.f_lineno
-            file_name = cf.f_back.f_back.f_code.co_filename
-            file_name = os.path.basename(file_name)
-        else:
-            line_no = None
-            file_name = None
-
-        message = ''
-        for m in msg:
-            if not message:
-                message = f'{message}{_merge(m, frame=False)}'
-            else:
-                message = f'{message} {_merge(m)}'
-
-        if self.skip_repeat:
-            if self._last_msg == message:
+            if self.log_level > log_level:
                 return False
-            self._last_msg = message
 
-        if self.status == LoggerStatus.STAGE:
-            color = ''
-            for s in self.key_word_success:
-                if s in message.lower():
-                    color = Fore.GREEN
-                    break
+            if 0 == (msg_size := len(msg)):
+                msg = ' '
 
-            if not color:
-                for s in self.key_word_fails:
+            if self.log_level <= LogLevel.DEBUG:
+                cf = inspect.currentframe()
+                line_no = cf.f_back.f_back.f_lineno
+                file_name = cf.f_back.f_back.f_code.co_filename
+                file_name = os.path.basename(file_name)
+            else:
+                line_no = None
+                file_name = None
+
+            message = ''
+            for m in msg:
+                if not message:
+                    message = f'{message}{_merge(m, frame=False)}'
+                else:
+                    message = f'{message} {_merge(m)}'
+
+            if self.skip_repeat:
+                if self._last_msg == message:
+                    return False
+                self._last_msg = message
+
+            if self.status == LoggerStatus.STAGE:
+                color = ''
+                for s in self.key_word_success:
                     if s in message.lower():
-                        color = Fore.RED
+                        color = Fore.GREEN
                         break
 
-            if not color:
-                color = self._color_list[self._stage_count]
-                self._stage_count = (self._stage_count + 1) % len(self._color_list)
+                if not color:
+                    for s in self.key_word_fails:
+                        if s in message.lower():
+                            color = Fore.RED
+                            break
 
-            total_message = f' {self.stage_sep} {color}{message}'
-        else:
-            global is_first_print
-            if not is_first_print:
-                if self.status == LoggerStatus.DOING:
+                if not color:
+                    color = self._color_list[self._stage_count]
+                    self._stage_count = (self._stage_count + 1) % len(self._color_list)
 
-                    add_new_line = False or self.check_add_new_line
-                    self.check_add_new_line = False
-                    for logger in enable_loggers:
-                        if logger != self and logger.status != LoggerStatus.FINISH:
-                            add_new_line = True
-                        logger.status = LoggerStatus.FINISH
+                total_message = f' {self.stage_sep} {color}{message}'
+            else:
+                global is_first_print
+                if not is_first_print:
 
-                    if add_new_line:
+                    if self.check_add_new_line or self.status == LoggerStatus.FINISH:
+                        self.check_add_new_line = False
                         old_print()
-                else:
-                    _if_do_new_line(self)
-            is_first_print = False
+                        set_other_logger_finish(self)
+                    elif self.status == LoggerStatus.DOING:
 
-            # _if_do_new_line(self)
-            timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-            location = f'[{file_name} {line_no}]' if line_no is not None else ''
+                        add_new_line = False
+                        for logger in enable_loggers:
+                            if logger != self and logger.status != LoggerStatus.FINISH:
+                                add_new_line = True
+                            logger.status = LoggerStatus.FINISH
 
-            total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+                        if add_new_line:
+                            set_other_logger_finish(self)
+                            old_print()
+                    # else:
+                    #     old_print(f' !!{self.status}!! ')
+                is_first_print = False
 
-        with global_lock:
+                # _if_do_new_line(self)
+                timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+                location = f'[{file_name} {line_no}]' if line_no is not None else ''
+
+                total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
             try:
                 if self.handler:
@@ -297,7 +306,7 @@ class SingleLog:
                 except UnicodeEncodeError:
                     old_print('sorry, SingleLog can not print the message')
 
-        return True
+            return True
 
 
 class Logger(SingleLog):
