@@ -63,7 +63,6 @@ class Logger:
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
                  key_word_fails: [list | None] = None, stage_color_list: [List[Fore] | None] = None):
         """
-        Init of Logger.
         :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
         :param handler: (Optional) the handlers of current logger. you can get the output msg from the handlers.
@@ -125,15 +124,17 @@ class Logger:
             enable_loggers.add(self)
 
     def info(self, *msg):
-        self._do(LogLevel.INFO, *msg)
+        self._start_check(LogLevel.INFO, *msg)
 
     def debug(self, *msg):
-        self._do(LogLevel.DEBUG, *msg)
+        self._start_check(LogLevel.DEBUG, *msg)
 
     def trace(self, *msg):
-        self._do(LogLevel.TRACE, *msg)
+        self._start_check(LogLevel.TRACE, *msg)
 
-    def _do(self, log_level: LogLevel, *msg):
+    def _start_check(self, log_level: LogLevel, *msg):
+
+        # old_print(f'start {self.status}', end='')
         if self.status != LoggerStatus.FINISH:
             self.check_add_new_line = True
         self.status = LoggerStatus.START
@@ -147,13 +148,18 @@ class Logger:
         # its log level is the same as the last do_level
         if self.status == LoggerStatus.FINISH:
             # works like normal logger
-            self._do(LogLevel.INFO, *msg)
+            self._start_check(LogLevel.INFO, *msg)
         elif self.status == LoggerStatus.STAGE:
             self._stage(self._do_level, *msg)
         else:
             raise Exception(f'Unknown log status {self.status}')
 
     def __del__(self):
+        with global_lock:
+            global enable_loggers
+            enable_loggers.remove(self)
+
+    def __delete__(self, instance):
         with global_lock:
             global enable_loggers
             enable_loggers.remove(self)
@@ -199,67 +205,70 @@ class Logger:
         utils.output_screen(total_message)
         utils.output_file(self.handlers, total_message)
 
-    def _start(self, log_level: LogLevel, *msg, **kwargs) -> bool:
+    def _print(self, *args, **kwargs):
+
+        self._lock_area(None, *args, **kwargs)
+
+    def _start(self, log_level: LogLevel, *msg) -> bool:
 
         if not self._check_log_level(log_level):
             return False
 
-        total_message = None
-        if self.status != LoggerStatus.PRINT:
+        if not msg:
+            msg = ' '
 
-            if not msg:
-                msg = ' '
+        message = f'{merge_msg(msg[0], frame=False)}'
+        for m in msg[1:]:
+            message = f'{message} {merge_msg(m)}'
 
-            message = f'{merge_msg(msg[0], frame=False)}'
-            for m in msg[1:]:
-                message = f'{message} {merge_msg(m)}'
+        if self.skip_repeat:
+            if self._last_msg == message:
+                return False
+            self._last_msg = message
 
-            if self.skip_repeat:
-                if self._last_msg == message:
-                    return False
-                self._last_msg = message
+        line_no = None
+        file_name = None
+        if self.log_level <= LogLevel.DEBUG:
+            cf = inspect.currentframe()
+            line_no = cf.f_back.f_back.f_lineno
+            file_name = cf.f_back.f_back.f_code.co_filename
+            file_name = os.path.basename(file_name)
 
-            line_no = None
-            file_name = None
-            if self.log_level <= LogLevel.DEBUG:
-                cf = inspect.currentframe()
-                line_no = cf.f_back.f_back.f_lineno
-                file_name = cf.f_back.f_back.f_code.co_filename
-                file_name = os.path.basename(file_name)
+        timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
+        location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
-            if self.status != LoggerStatus.PRINT:
-                timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-                location = f'[{file_name} {line_no}]' if line_no is not None else ''
+        total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
-                total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+        self._lock_area(total_message)
 
+        return True
+
+    def _lock_area(self, total_message, *args, **kwargs):
         with global_lock:
+            global is_first_print
+            if not is_first_print:
+                if self.check_add_new_line:
+                    self.check_add_new_line = False
+                    old_print()
+                    set_other_logger_finish(self)
+                elif self.status == LoggerStatus.START:
 
-            if self.status != LoggerStatus.STAGE:
-                global is_first_print
-                if not is_first_print:
-                    if self.check_add_new_line:
-                        self.check_add_new_line = False
+                    add_new_line = False
+                    for logger in enable_loggers:
+                        if logger != self and logger.status != LoggerStatus.FINISH:
+                            add_new_line = True
+                        logger.status = LoggerStatus.FINISH
+
+                    if add_new_line:
                         old_print()
-                        set_other_logger_finish(self)
-                    elif self.status == LoggerStatus.START:
-
-                        add_new_line = False
-                        for logger in enable_loggers:
-                            if logger != self and logger.status != LoggerStatus.FINISH:
-                                add_new_line = True
-                            logger.status = LoggerStatus.FINISH
-
-                        if add_new_line:
-                            old_print()
-                    else:
-                        old_print()
-                is_first_print = False
+                else:
+                    old_print()
+            is_first_print = False
 
             kwargs['end'] = ''
 
             if self.status == LoggerStatus.PRINT:
-                old_print(*msg, **kwargs)
+                old_print(*args, **kwargs)
                 return True
 
             utils.output_screen(total_message)
@@ -271,7 +280,7 @@ class Logger:
 class PrintLogger(Logger):
     def print(self, *args, **kwargs):
         self.status = LoggerStatus.PRINT
-        self._start(LogLevel.INFO, *args, **kwargs)
+        self._print(*args, **kwargs)
         set_other_logger_finish(self)
 
 
