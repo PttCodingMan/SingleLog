@@ -52,16 +52,8 @@ logger.info('show int list', [101, 102, 103])
 logger.info('show tuple', ('12', '14', '16'))
 logger.info('data', {'1': 'value1', '2': 'value2'})
 ```
-Result
-```Batchfile
-[20210501 12:14:48][demo] show int list [101 102 103]
-[20210501 12:14:48][demo] show tuple (12 14 16)
-[20210501 12:14:48][demo] data 
-{
-  "1": "value1",
-  "2": "value2"
-}
-```
+
+![](https://imgur.com/EVudUBb.jpg)
 
 ### Stage method
 You can use stage method to display the log.
