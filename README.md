@@ -164,7 +164,7 @@ logger.stage('1')
 ![](https://imgur.com/6FZoLYD.jpeg)
 
 ### Stage Color
-You can change stage color.
+You can change stage color.  
 You can find the more color information from [Colorama](https://github.com/tartley/colorama).
 
 ```python
@@ -197,6 +197,7 @@ logger.info('custom timestamp')
 
 ### Keyword of success and failure
 You can use keyword of success and failure to display the log.  
+
 The keywords in `key_word_success`, will be displayed in green color.  
 The keywords in `key_word_failure`, will be displayed in red color.  
 
