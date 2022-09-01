@@ -6,7 +6,7 @@ import os
 import threading
 from enum import IntEnum, auto
 from time import strftime
-from typing import Callable, List, Set
+from typing import Callable, List
 
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
@@ -41,16 +41,13 @@ last_logger: [Logger | None] = None
 is_first_print = True
 
 
-def set_other_logger_finish(current_logger: Logger = None):
-    global last_logger
-    last_logger.status = LoggerStatus.FINISH
-
-
 def new_print(*args, **kwargs):
     print_logger.print(*args, **kwargs)
 
 
 builtins.print = new_print
+
+BOLD = '\033[1m'
 
 
 class Logger:
@@ -183,7 +180,7 @@ class Logger:
             color = self._stage_color_list[self._stage_count]
             self._stage_count = (self._stage_count + 1) % len(self._stage_color_list)
 
-        total_message = f' {self.stage_sep} {color}{message}'
+        total_message = f' {self.stage_sep} {color}{BOLD}{message}'
 
         utils.output_screen(total_message)
         utils.output_file(self.handlers, total_message)
@@ -236,13 +233,14 @@ class Logger:
                 if self.check_add_new_line:
                     self.check_add_new_line = False
                     old_print()
-                    set_other_logger_finish(self)
+                    last_logger.status = LoggerStatus.FINISH
                 elif self.status == LoggerStatus.START:
                     if last_logger.status != LoggerStatus.FINISH:
                         old_print()
                 else:
                     old_print()
-            is_first_print = False
+            else:
+                is_first_print = False
 
             if self.status == LoggerStatus.PRINT:
                 kwargs['end'] = ''
@@ -261,7 +259,6 @@ class PrintLogger(Logger):
     def print(self, *args, **kwargs):
         self.status = LoggerStatus.PRINT
         self._print(*args, **kwargs)
-        # set_other_logger_finish(self)
 
 
 print_logger = PrintLogger(log_name='', timestamp=None)
