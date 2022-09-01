@@ -4,12 +4,6 @@
 name: deploy
 
 on:
-  push:
-    paths:
-      - 'setup.py'
-  pull_request:
-    paths:
-      - 'setup.py'
   workflow_run:
     workflows: [ test ]
     types:

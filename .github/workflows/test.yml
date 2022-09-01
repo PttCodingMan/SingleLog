@@ -5,9 +5,13 @@ name: test
 
 on:
   push:
-    branches: [ master ]
+    paths:
+      - 'SingleLog/**'
+      - 'tests/**'
   pull_request:
-    branches: [ master ]
+    paths:
+      - 'SingleLog/**'
+      - 'tests/**'
 
 jobs:
   build:
