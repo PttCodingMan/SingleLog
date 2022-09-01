@@ -37,7 +37,7 @@ class LoggerStatus(AutoStrEnum):
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug']
 default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
-last_logger: Logger = None
+last_logger: [Logger | None] = None
 is_first_print = True
 
 
@@ -221,14 +221,13 @@ class Logger:
             location = f'[{file_name} {line_no}]'
 
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-
         total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
         self._lock_area(total_message)
 
         return True
 
-    def _lock_area(self, total_message, *args, **kwargs):
+    def _lock_area(self, total_message: [str | None], *args, **kwargs):
         with global_lock:
             global is_first_print
             global last_logger
@@ -239,7 +238,6 @@ class Logger:
                     old_print()
                     set_other_logger_finish(self)
                 elif self.status == LoggerStatus.START:
-
                     if last_logger.status != LoggerStatus.FINISH:
                         old_print()
                 else:
