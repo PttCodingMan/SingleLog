@@ -4,9 +4,53 @@
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/SingleLog)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
 
-### A single python logger, super easy to use and thread safe.
+### SingleLog is a simple library for logging. It is designed to make logging easier.
+### This project can format your data and output it to the console or file.
+### It also supports multiple log levels and multiple log handlers.
+
+## Quick View
+
+### Stage Method
+SingleLog can use stage method to display the log step by step.  
+And don't need to worry about the default print function will print the log in the same line.
+
+```python
+import time
+from SingleLog import Logger
+
+logger = Logger('rocket')
+
+logger.info('Init rocket launch proces')
+time.sleep(1.5)
+logger.stage('complete!')
+
+logger.info('Start the countdown')
+time.sleep(1)
+logger.stage('3')
+time.sleep(1)
+logger.stage('2')
+time.sleep(1)
+logger.stage('1')
+time.sleep(1)
+logger.stage('fire!')
+logger.info('Launch complete')
+```
 
 ![](https://imgur.com/0nYvBcd.gif)
+
+### Automatic Data Format
+SingleLog Supports some common types to display in format. Such as list, dict and tuple etc.
+
+```python
+from SingleLog import Logger
+
+logger = Logger('demo')
+logger.info('show int list', [101, 102, 103])
+logger.info('show tuple', ('12', '14', '16'))
+logger.info('data', {'1': 'value1', '2': 'value2'})
+```
+
+![](https://imgur.com/EVudUBb.jpg)
 
 ## Install
 ```
@@ -40,47 +84,6 @@ logger.info('you can see it, when log_level is set to INFO, DEBUG and TRACE')
 logger.debug('you can see it, when log_level is set to DEBUG and TRACE')
 logger.trace('you can see it, when log_level is set to TRACE')
 ```
-
-## Data automatically format
-SingleLog Supports some common types to display in format. Such as list, dict and tuple etc.
-
-```python
-from SingleLog import Logger
-
-logger = Logger('demo')
-logger.info('show int list', [101, 102, 103])
-logger.info('show tuple', ('12', '14', '16'))
-logger.info('data', {'1': 'value1', '2': 'value2'})
-```
-
-![](https://imgur.com/EVudUBb.jpg)
-
-### Stage method
-You can use stage method to display the log.
-
-```python
-import time
-from SingleLog import Logger
-
-logger = Logger('rocket')
-
-logger.info('Init rocket launch proces')
-time.sleep(1.5)
-logger.stage('complete!')
-
-logger.info('Start the countdown')
-time.sleep(1)
-logger.stage('3')
-time.sleep(1)
-logger.stage('2')
-time.sleep(1)
-logger.stage('1')
-time.sleep(1)
-logger.stage('fire!')
-logger.info('Launch complete')
-```
-
-![](https://imgur.com/0nYvBcd.gif)
 
 ### Logger Handler
 You can use logger handler to handle the log.
