@@ -5,13 +5,13 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/SingleLog)
 
 ### SingleLog is a simple library for logging. It is designed to make logging easier.
-### This project can format your data and output it to the console or file.
-### It also supports multiple log levels and multiple log handlers.
+### It can format your data and output it to the console or file.
+### It can also log your event status step by step.
 
 ## Quick View
 
 ### Stage Method
-SingleLog can use stage method to display the log step by step.  
+You can use stage method to display the log step by step.  
 And don't need to worry about the default print function will print the log in the same line.
 
 ```python
