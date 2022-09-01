@@ -1,4 +1,3 @@
-import time
 import sys
 
 sys.path.insert(0, '../')
@@ -10,7 +9,7 @@ from SingleLog import Logger
 def test_func():
     logger = Logger('test_func')
 
-    logger.info('start')
+    logger.debug('start')
     logger.info('hi')
 
     logger.info('')
@@ -95,6 +94,11 @@ def test_func():
     logger.info('default logger print')
 
 
+def test_print_first():
+    logger = Logger()
+    print('hi')
+    logger.info('default logger print')
+
+
 if __name__ == '__main__':
     test_func()
-
