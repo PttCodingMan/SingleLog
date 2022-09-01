@@ -37,16 +37,13 @@ class LoggerStatus(AutoStrEnum):
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug']
 default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
-enable_loggers: Set[Logger] = set()
+last_logger: Logger = None
 is_first_print = True
 
 
 def set_other_logger_finish(current_logger: Logger = None):
-    global enable_loggers
-    for logger in enable_loggers:
-        if logger is current_logger:
-            continue
-        logger.status = LoggerStatus.FINISH
+    global last_logger
+    last_logger.status = LoggerStatus.FINISH
 
 
 def new_print(*args, **kwargs):
@@ -119,10 +116,6 @@ class Logger:
         self._do_level = None
         self.check_add_new_line = False
 
-        with global_lock:
-            global enable_loggers
-            enable_loggers.add(self)
-
     def info(self, *msg):
         self._start_check(LogLevel.INFO, *msg)
 
@@ -153,16 +146,6 @@ class Logger:
             self._stage(self._do_level, *msg)
         else:
             raise Exception(f'Unknown log status {self.status}')
-
-    def __del__(self):
-        with global_lock:
-            global enable_loggers
-            enable_loggers.remove(self)
-
-    def __delete__(self, instance):
-        with global_lock:
-            global enable_loggers
-            enable_loggers.remove(self)
 
     def _check_log_level(self, log_level: LogLevel) -> bool:
         # check the msg will be output or not
@@ -205,6 +188,9 @@ class Logger:
         utils.output_screen(total_message)
         utils.output_file(self.handlers, total_message)
 
+        global last_logger
+        last_logger = self
+
     def _print(self, *args, **kwargs):
 
         self._lock_area(None, *args, **kwargs)
@@ -226,16 +212,15 @@ class Logger:
                 return False
             self._last_msg = message
 
-        line_no = None
-        file_name = None
+        location = ''
         if self.log_level <= LogLevel.DEBUG:
             cf = inspect.currentframe()
             line_no = cf.f_back.f_back.f_lineno
             file_name = cf.f_back.f_back.f_code.co_filename
             file_name = os.path.basename(file_name)
+            location = f'[{file_name} {line_no}]'
 
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-        location = f'[{file_name} {line_no}]' if line_no is not None else ''
 
         total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
@@ -246,6 +231,8 @@ class Logger:
     def _lock_area(self, total_message, *args, **kwargs):
         with global_lock:
             global is_first_print
+            global last_logger
+
             if not is_first_print:
                 if self.check_add_new_line:
                     self.check_add_new_line = False
@@ -253,26 +240,21 @@ class Logger:
                     set_other_logger_finish(self)
                 elif self.status == LoggerStatus.START:
 
-                    add_new_line = False
-                    for logger in enable_loggers:
-                        if logger != self and logger.status != LoggerStatus.FINISH:
-                            add_new_line = True
-                        logger.status = LoggerStatus.FINISH
-
-                    if add_new_line:
+                    if last_logger.status != LoggerStatus.FINISH:
                         old_print()
                 else:
                     old_print()
             is_first_print = False
 
-            kwargs['end'] = ''
-
             if self.status == LoggerStatus.PRINT:
+                kwargs['end'] = ''
                 old_print(*args, **kwargs)
                 return True
 
             utils.output_screen(total_message)
             utils.output_file(self.handlers, total_message)
+
+            last_logger = self
 
             return True
 
@@ -281,8 +263,7 @@ class PrintLogger(Logger):
     def print(self, *args, **kwargs):
         self.status = LoggerStatus.PRINT
         self._print(*args, **kwargs)
-        set_other_logger_finish(self)
+        # set_other_logger_finish(self)
 
 
 print_logger = PrintLogger(log_name='', timestamp=None)
-enable_loggers.add(print_logger)
