@@ -139,7 +139,7 @@ class Logger:
         if self.status == LoggerStatus.FINISH:
             # works like normal logger
             self._start_check(LogLevel.INFO, *msg)
-        elif self.status == LoggerStatus.STAGE:
+        elif self.status in [LoggerStatus.STAGE, LoggerStatus.START]:
             self._stage(self._do_level, *msg)
         else:
             raise Exception(f'Unknown log status {self.status}')
@@ -159,7 +159,7 @@ class Logger:
         if not self._check_log_level(log_level):
             return False
 
-        if self.status != LoggerStatus.STAGE:
+        if self.status not in [LoggerStatus.STAGE, LoggerStatus.START]:
             raise Exception(f'Unknown log status {self.status}')
 
         message = str(msg)
