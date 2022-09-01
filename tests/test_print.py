@@ -10,6 +10,9 @@ from SingleLog import Logger
 def test_func():
     logger = Logger('test_func')
 
+    logger.info('start')
+    logger.info('hi')
+
     logger.info('')
 
     logger.info('type', type(''))

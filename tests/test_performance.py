@@ -14,5 +14,5 @@ if __name__ == '__main__':
 
     logger.info(f'{end - start} seconds')
 
-    # 1.9021880626678467 seconds (100000) 2022-08-31
+    # 1.5678861141204834 seconds (100000) 2022-08-31
 

@@ -59,4 +59,4 @@ def test_stage_3():
 
 
 if __name__ == '__main__':
-    test_stage_3()
+    test_stage()

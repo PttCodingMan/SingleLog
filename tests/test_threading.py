@@ -41,4 +41,8 @@ def test_threading_with_print():
 
 
 if __name__ == '__main__':
-    test_threading_with_print()
+    import SingleLog
+
+    # print(len(SingleLog.SingleLog.enable_loggers))
+    test_threading()
+    # print(len(SingleLog.SingleLog.enable_loggers))
