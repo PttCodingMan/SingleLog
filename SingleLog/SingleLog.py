@@ -35,8 +35,8 @@ class LoggerStatus(AutoStrEnum):
 
 
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
-default_key_word_fails = ['fail', 'false', 'error', 'bug']
-default_color_list = [Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+default_key_word_fails = ['fail', 'false', 'error', 'bug', 'fire']
+default_color_list = [Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTCYAN_EX]
 last_logger: [Logger | None] = None
 is_first_print = True
 
@@ -53,7 +53,7 @@ BOLD = '\033[1m'
 class Logger:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
-                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = '...',
+                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = '..',
                  timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
                  key_word_fails: [list | None] = None, stage_color_list: [List[Fore] | None] = None):
         """
@@ -163,6 +163,8 @@ class Logger:
             raise Exception(f'Unknown log status {self.status}')
 
         message = str(msg)
+        if self.skip_repeat:
+            self._last_msg = message
 
         color = ''
         for s in self.key_word_success:
@@ -224,23 +226,34 @@ class Logger:
 
         return True
 
+    def _add_newline(self) -> None:
+        old_print()
+        if last_logger is not self:
+            last_logger.status = LoggerStatus.FINISH
+        self._stage_count = 0
+
     def _lock_area(self, total_message: [str | None], *args, **kwargs):
+
+        if self.status == LoggerStatus.STAGE:
+            # if the last stage is stage, don't need to lock
+            raise Exception('Cannot print in stage status')
+
         with global_lock:
             global is_first_print
             global last_logger
 
-            if not is_first_print:
-                if self.check_add_new_line:
-                    self.check_add_new_line = False
-                    old_print()
-                    last_logger.status = LoggerStatus.FINISH
-                elif self.status == LoggerStatus.START:
-                    if last_logger.status != LoggerStatus.FINISH:
-                        old_print()
-                else:
-                    old_print()
-            else:
+            if is_first_print:
                 is_first_print = False
+            else:
+                if self.status == LoggerStatus.START:
+                    # if the status is start, it means we need to check the status of last logger
+                    # note: last logger could be self
+                    if last_logger.status != LoggerStatus.FINISH:
+                        # if self or last logger is not finish, add newline
+                        self._add_newline()
+                else:
+                    self.check_add_new_line = False
+                    self._add_newline()
 
             last_logger = self
             if self.status == LoggerStatus.PRINT:

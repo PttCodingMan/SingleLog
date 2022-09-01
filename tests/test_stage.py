@@ -34,9 +34,16 @@ def test_stage():
 def test_stage_2():
     logger = Logger('demo')
 
+    logger.info('do something')
+    logger.stage('bug')
+    logger.info('do something')
+    logger.stage('success')
+
     logger.info('start')
-    for i in range(10):
-        logger.stage(i)
+    for i in range(3, 20):
+        logger.info('start', i)
+        for ii in range(i):
+            logger.stage(ii)
 
 
 def test_stage_3():
