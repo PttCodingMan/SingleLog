@@ -242,15 +242,15 @@ class Logger:
             else:
                 is_first_print = False
 
+            last_logger = self
             if self.status == LoggerStatus.PRINT:
                 kwargs['end'] = ''
                 old_print(*args, **kwargs)
+
                 return True
 
             utils.output_screen(total_message)
             utils.output_file(self.handlers, total_message)
-
-            last_logger = self
 
             return True
 
