@@ -1,4 +1,5 @@
 import sys
+from itertools import permutations
 
 sys.path.insert(0, '../')
 
@@ -94,11 +95,26 @@ def test_func():
     logger.info('default logger print')
 
 
-def test_print_first():
-    logger = Logger()
-    print('hi')
-    logger.info('default logger print')
+def test_first_test():
+
+    api_list = [
+        'print',
+        'info',
+        'stage'
+    ]
+
+    for i, api_test in enumerate(permutations(api_list)):
+        logger = Logger(f'test-{i}')
+        for api in api_test:
+            if api == 'print':
+                print(f'test-{i} print')
+            if api == 'info':
+                logger.info('info')
+            if api == 'stage':
+                logger.stage(f'test-{i} stage')
+
 
 
 if __name__ == '__main__':
+    # test_first_test()
     test_func()

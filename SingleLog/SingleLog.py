@@ -111,7 +111,7 @@ class Logger:
 
         self.status = LoggerStatus.FINISH
         self._last_msg = None
-        self._do_level = None
+        self._stage_level = None
         self.check_add_new_line = False
 
     def info(self, *msg):
@@ -126,13 +126,9 @@ class Logger:
     def _start_check(self, log_level: LogLevel, *msg):
 
         with global_lock:
-            # old_print(f'start {self.status}', end='')
-            if self.status != LoggerStatus.FINISH:
-                self.check_add_new_line = True
-            self.status = LoggerStatus.START
             if self._start(log_level, *msg):
                 self.status = LoggerStatus.STAGE
-                self._do_level = log_level
+                self._stage_level = log_level
             elif not self.check_add_new_line:
                 self.status = LoggerStatus.FINISH
 
@@ -141,16 +137,19 @@ class Logger:
         if self.status == LoggerStatus.FINISH:
             # works like normal logger
             self._start_check(LogLevel.INFO, *msg)
-        elif self.status in [LoggerStatus.STAGE, LoggerStatus.START]:
-            self._stage(self._do_level, *msg)
-        else:
-            raise Exception(f'Unknown log status {self.status}')
+            return
+
+        self._stage(self._stage_level, *msg)
 
     def _print(self, *args, **kwargs):
         with global_lock:
             self.status = LoggerStatus.PRINT
-            self._lock_area(None, *args, **kwargs)
+            self._add_newline()
+            self._output(None, *args, **kwargs)
             self.status = LoggerStatus.FINISH
+
+            global last_logger
+            last_logger = self
 
 
     def _check_log_level(self, log_level: LogLevel) -> bool:
@@ -166,7 +165,7 @@ class Logger:
 
     def _stage(self, log_level: LogLevel, msg):
         if not self._check_log_level(log_level):
-            return False
+            return
 
         if self.status not in [LoggerStatus.STAGE, LoggerStatus.START]:
             raise Exception(f'Unknown log status {self.status}')
@@ -204,6 +203,11 @@ class Logger:
         if not self._check_log_level(log_level):
             return False
 
+        if self.status != LoggerStatus.FINISH:
+            self.check_add_new_line = True
+
+        self.status = LoggerStatus.START
+
         if not msg:
             msg = ' '
 
@@ -227,17 +231,21 @@ class Logger:
         timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
         total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
 
-        self._lock_area(total_message)
+        self._add_newline()
+        self._output(total_message)
+
+        global last_logger
+        last_logger = self
 
         return True
 
-    def _add_newline(self) -> None:
+    def __add_newline(self) -> None:
         old_print()
         if last_logger is not self:
             last_logger.status = LoggerStatus.FINISH
         self._stage_count = 0
 
-    def _lock_area(self, total_message: [str | None], *args, **kwargs):
+    def _add_newline(self):
 
         if self.status == LoggerStatus.STAGE:
             # if the last stage is stage, don't need to lock
@@ -254,20 +262,20 @@ class Logger:
                 # note: last logger could be self
                 if last_logger.status != LoggerStatus.FINISH:
                     # if self or last logger is not finish, add newline
-                    self._add_newline()
+                    self.__add_newline()
             elif self.status == LoggerStatus.PRINT:
                 if self is not last_logger:
                     # if self is not last logger, add newline
-                    self._add_newline()
+                    self.__add_newline()
                 self.check_add_new_line = False
             else:
                 self.check_add_new_line = False
-                self._add_newline()
+                self.__add_newline()
 
-        last_logger = self
+    def _output(self, total_message: [str | None], *args, **kwargs) -> None:
         if self.status == LoggerStatus.PRINT:
             old_print(*args, **kwargs)
-            return True
+            return
 
         utils.output_screen(total_message)
         utils.output_file(self.handlers, total_message)
