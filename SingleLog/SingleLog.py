@@ -36,7 +36,8 @@ class LoggerStatus(AutoStrEnum):
 
 default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'complete', 'pass']
 default_key_word_fails = ['fail', 'false', 'error', 'bug', 'fire']
-default_color_list = [Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX, Fore.LIGHTMAGENTA_EX, Fore.LIGHTCYAN_EX]
+default_color_list = [Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX,
+                      Fore.LIGHTMAGENTA_EX, Fore.LIGHTCYAN_EX]
 last_logger: [Logger | None] = None
 is_first_print = True
 
@@ -144,6 +145,11 @@ class Logger:
         else:
             raise Exception(f'Unknown log status {self.status}')
 
+    def _print(self, *args, **kwargs):
+        self.status = LoggerStatus.PRINT
+        self._lock_area(None, *args, **kwargs)
+        self.status = LoggerStatus.FINISH
+
     def _check_log_level(self, log_level: LogLevel) -> bool:
         # check the msg will be output or not
 
@@ -190,10 +196,6 @@ class Logger:
         global last_logger
         last_logger = self
 
-    def _print(self, *args, **kwargs):
-
-        self._lock_area(None, *args, **kwargs)
-
     def _start(self, log_level: LogLevel, *msg) -> bool:
 
         if not self._check_log_level(log_level):
@@ -239,6 +241,7 @@ class Logger:
             raise Exception('Cannot print in stage status')
 
         with global_lock:
+
             global is_first_print
             global last_logger
 
@@ -251,15 +254,18 @@ class Logger:
                     if last_logger.status != LoggerStatus.FINISH:
                         # if self or last logger is not finish, add newline
                         self._add_newline()
+                elif self.status == LoggerStatus.PRINT:
+                    if self is not last_logger:
+                        # if self is not last logger, add newline
+                        self._add_newline()
+                    self.check_add_new_line = False
                 else:
                     self.check_add_new_line = False
                     self._add_newline()
 
             last_logger = self
             if self.status == LoggerStatus.PRINT:
-                kwargs['end'] = ''
                 old_print(*args, **kwargs)
-
                 return True
 
             utils.output_screen(total_message)
@@ -270,7 +276,6 @@ class Logger:
 
 class PrintLogger(Logger):
     def print(self, *args, **kwargs):
-        self.status = LoggerStatus.PRINT
         self._print(*args, **kwargs)
 
 
