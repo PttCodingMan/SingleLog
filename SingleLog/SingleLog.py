@@ -39,7 +39,6 @@ default_key_word_fails = ['fail', 'false', 'error', 'bug', 'fire']
 default_color_list = [Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX,
                       Fore.LIGHTMAGENTA_EX, Fore.LIGHTCYAN_EX]
 last_logger: [Logger | None] = None
-is_first_print = True
 
 
 def new_print(*args, **kwargs):
@@ -128,8 +127,6 @@ class Logger:
             if self._start(log_level, *msg):
                 self.status = LoggerStatus.STAGE
                 self._stage_level = log_level
-            else:
-                self.status = LoggerStatus.FINISH
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
@@ -247,12 +244,8 @@ class Logger:
             # if the last stage is stage, don't need to lock
             raise Exception('Cannot print in stage status')
 
-        global is_first_print
         global last_logger
-
-        if is_first_print:
-            is_first_print = False
-        else:
+        if last_logger:
             if self.status == LoggerStatus.START:
                 # if the status is start, it means we need to check the status of last logger
                 # note: last logger could be self
@@ -260,11 +253,11 @@ class Logger:
                     # if self or last logger is not finish, add newline
                     self.__add_newline()
             elif self.status == LoggerStatus.PRINT:
-                if self is not last_logger:
+                # is the last print is not print, we need to add newline
+                # adjust this to avoid the situation that the last print is print
+                if last_logger.__class__.__name__ != 'PrintLogger':
                     # if self is not last logger, add newline
                     self.__add_newline()
-            else:
-                self.__add_newline()
 
     def _output(self, total_message: [str | None], *args, **kwargs) -> None:
         if self.status == LoggerStatus.PRINT:
