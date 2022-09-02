@@ -115,30 +115,23 @@ class Logger:
         self._stage_level = None
 
     def info(self, *msg):
-        self._start_check(LogLevel.INFO, *msg)
+        self._start(LogLevel.INFO, *msg)
 
     def debug(self, *msg):
-        self._start_check(LogLevel.DEBUG, *msg)
+        self._start(LogLevel.DEBUG, *msg)
 
     def trace(self, *msg):
-        self._start_check(LogLevel.TRACE, *msg)
-
-    def _start_check(self, log_level: LogLevel, *msg):
-
-        with global_lock:
-            if self._start(log_level, *msg):
-                self._logger_status = LoggerStatus.STAGE
-                self._stage_level = log_level
+        self._start(LogLevel.TRACE, *msg)
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
 
         if last_logger and last_logger._logger_status == LoggerStatus.FINISH:
             # works like normal logger
-            self._start_check(LogLevel.INFO, *msg)
+            self._start(self._stage_level if self._stage_level else LogLevel.INFO, *msg)
             return
         if self._logger_status == LoggerStatus.FINISH:
-            self._start_check(LogLevel.INFO, *msg)
+            self._start(self._stage_level if self._stage_level else LogLevel.INFO, *msg)
             return
 
         self._stage(self._stage_level, *msg)
@@ -204,46 +197,51 @@ class Logger:
 
     def _start(self, log_level: LogLevel, *msg) -> bool:
 
-        if not self._check_log_level(log_level):
-            return False
-
-        self._logger_status = LoggerStatus.START
-
-        if not msg:
-            msg = ' '
-
-        message = f'{merge_msg(msg[0], frame=False)}'
-        for m in msg[1:]:
-            message = f'{message} {merge_msg(m)}'
-
-        if self._skip_repeat:
-            if self._last_msg == message:
+        with global_lock:
+            if not self._check_log_level(log_level):
                 return False
-            self._last_msg = message
 
-        location = ''
-        if self._log_level <= LogLevel.DEBUG:
-            cf = inspect.currentframe()
-            line_no = cf.f_back.f_back.f_lineno
-            file_name = cf.f_back.f_back.f_code.co_filename
-            file_name = os.path.basename(file_name)
-            location = f'[{file_name} {line_no}]'
+            self._logger_status = LoggerStatus.START
 
-        timestamp = f'[{strftime(self._timestamp)}]' if self._timestamp else ''
-        total_message = f'{timestamp}{self._log_name}{location} {message}'.strip()
+            if not msg:
+                msg = ' '
 
-        self._add_newline()
-        self._output(total_message)
+            message = f'{merge_msg(msg[0], frame=False)}'
+            for m in msg[1:]:
+                message = f'{message} {merge_msg(m)}'
 
-        global last_logger
-        last_logger = self
+            if self._skip_repeat:
+                if self._last_msg == message:
+                    return False
+                self._last_msg = message
 
-        return True
+            location = ''
+            if self._log_level <= LogLevel.DEBUG:
+                cf = inspect.currentframe()
+                line_no = cf.f_back.f_back.f_lineno
+                file_name = cf.f_back.f_back.f_code.co_filename
+                file_name = os.path.basename(file_name)
+                location = f'[{file_name} {line_no}]'
+
+            timestamp = f'[{strftime(self._timestamp)}]' if self._timestamp else ''
+            total_message = f'{timestamp}{self._log_name}{location} {message}'.strip()
+
+            self._add_newline()
+            self._output(total_message)
+
+            global last_logger
+            last_logger = self
+
+            self._logger_status = LoggerStatus.STAGE
+            self._stage_level = log_level
+
+            return True
 
     def __add_newline(self) -> None:
         old_print()
         if last_logger is not self:
-            last_logger.status = LoggerStatus.FINISH
+            last_logger._logger_status = LoggerStatus.FINISH
+            last_logger._stage_level = None
         self._stage_count = 0
 
     def _add_newline(self):
