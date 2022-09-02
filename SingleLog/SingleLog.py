@@ -38,6 +38,7 @@ default_key_word_success = ['success', 'ok', 'done', 'yes', 'okay', 'true', 'com
 default_key_word_fails = ['fail', 'false', 'error', 'bug', 'fire']
 default_color_list = [Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.LIGHTYELLOW_EX, Fore.LIGHTBLUE_EX,
                       Fore.LIGHTMAGENTA_EX, Fore.LIGHTCYAN_EX]
+
 last_logger: [Logger | None] = None
 
 
@@ -53,13 +54,14 @@ BOLD = '\033[1m'
 class Logger:
 
     def __init__(self, log_name: [str | None] = 'logger', log_level: LogLevel = LogLevel.INFO,
-                 skip_repeat: bool = False, handler: [Callable | List[Callable]] = None, stage_sep: str = '..',
-                 timestamp: [str | None] = "%m.%d %H:%M:%S", key_word_success: [list | None] = None,
-                 key_word_fails: [list | None] = None, stage_color_list: [List[Fore] | None] = None):
+                 skip_repeat: bool = False, stage_sep: str = '..', timestamp: [str | None] = "%m.%d %H:%M:%S",
+                 callback: [Callable | List[Callable]] = None, stage_color_list: [List[Fore] | None] = None,
+                 key_word_success: [list | None] = None, key_word_fails: [list | None] = None):
+
         """
         :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
-        :param handler: (Optional) the handlers of current logger. you can get the output msg from the handlers.
+        :param callback: (Optional) the callback_list of current logger. you can get the output msg from the callback_list.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
         :param timestamp: (Optional) the timestamp format of current logger.
         :param stage_sep: (Optional) the separator of stage.
@@ -79,14 +81,14 @@ class Logger:
 
         self.log_level = log_level
 
-        self.handlers = []
-        if handler is not None:
-            if not isinstance(handler, list):
-                handler = [handler]
-            for h in handler:
+        self.callback_list = []
+        if callback is not None:
+            if not isinstance(callback, list):
+                callback = [callback]
+            for h in callback:
                 if not callable(h):
-                    raise TypeError('Handler must be callable!!')
-            self.handlers = handler
+                    raise TypeError('callback must be callable!!')
+            self.callback_list = callback
 
         self.skip_repeat = skip_repeat
         self.timestamp = timestamp
@@ -108,7 +110,7 @@ class Logger:
         else:
             self._stage_color_list = stage_color_list
 
-        self.status = LoggerStatus.FINISH
+        self._logger_status = LoggerStatus.FINISH
         self._last_msg = None
         self._stage_level = None
 
@@ -125,13 +127,17 @@ class Logger:
 
         with global_lock:
             if self._start(log_level, *msg):
-                self.status = LoggerStatus.STAGE
+                self._logger_status = LoggerStatus.STAGE
                 self._stage_level = log_level
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
-        if self.status == LoggerStatus.FINISH:
+
+        if last_logger and last_logger._logger_status == LoggerStatus.FINISH:
             # works like normal logger
+            self._start_check(LogLevel.INFO, *msg)
+            return
+        if self._logger_status == LoggerStatus.FINISH:
             self._start_check(LogLevel.INFO, *msg)
             return
 
@@ -139,20 +145,22 @@ class Logger:
 
     def _print(self, *args, **kwargs):
         with global_lock:
-            self.status = LoggerStatus.PRINT
+            self._logger_status = LoggerStatus.PRINT
             self._add_newline()
             self._output(None, *args, **kwargs)
-            self.status = LoggerStatus.FINISH
+            self._logger_status = LoggerStatus.FINISH
 
             global last_logger
             last_logger = self
 
-
     def _check_log_level(self, log_level: LogLevel) -> bool:
         # check the msg will be output or not
 
-        if self.status == LoggerStatus.PRINT:
+        if self._logger_status == LoggerStatus.PRINT:
             return True
+
+        if not log_level:
+            raise ValueError('log_level must be set!!')
 
         if self.log_level > log_level:
             return False
@@ -163,8 +171,8 @@ class Logger:
         if not self._check_log_level(log_level):
             return
 
-        if self.status not in [LoggerStatus.STAGE, LoggerStatus.START]:
-            raise Exception(f'Unknown log status {self.status}')
+        if self._logger_status not in [LoggerStatus.STAGE, LoggerStatus.START]:
+            raise Exception(f'Unknown log _logger_status {self._logger_status}')
 
         message = str(msg)
         if self.skip_repeat:
@@ -189,7 +197,7 @@ class Logger:
         total_message = f' {self.stage_sep} {color}{BOLD}{message}'
 
         utils.output_screen(total_message)
-        utils.output_file(self.handlers, total_message)
+        utils.output_file(self.callback_list, total_message)
 
         global last_logger
         last_logger = self
@@ -199,7 +207,7 @@ class Logger:
         if not self._check_log_level(log_level):
             return False
 
-        self.status = LoggerStatus.START
+        self._logger_status = LoggerStatus.START
 
         if not msg:
             msg = ' '
@@ -240,19 +248,20 @@ class Logger:
 
     def _add_newline(self):
 
-        if self.status == LoggerStatus.STAGE:
+        if self._logger_status == LoggerStatus.STAGE:
             # if the last stage is stage, don't need to lock
-            raise Exception('Cannot print in stage status')
+            raise Exception('Cannot print in stage _logger_status')
 
         global last_logger
         if last_logger:
-            if self.status == LoggerStatus.START:
-                # if the status is start, it means we need to check the status of last logger
+            if self._logger_status == LoggerStatus.START:
+                # if the _logger_status is start, it means we need to check the _logger_status of last logger
                 # note: last logger could be self
-                if last_logger.status != LoggerStatus.FINISH:
+
+                if last_logger._logger_status != LoggerStatus.FINISH:
                     # if self or last logger is not finish, add newline
                     self.__add_newline()
-            elif self.status == LoggerStatus.PRINT:
+            elif self._logger_status == LoggerStatus.PRINT:
                 # is the last print is not print, we need to add newline
                 # adjust this to avoid the situation that the last print is print
                 if last_logger.__class__.__name__ != 'PrintLogger':
@@ -260,13 +269,12 @@ class Logger:
                     self.__add_newline()
 
     def _output(self, total_message: [str | None], *args, **kwargs) -> None:
-        if self.status == LoggerStatus.PRINT:
+        if self._logger_status == LoggerStatus.PRINT:
             old_print(*args, **kwargs)
             return
 
         utils.output_screen(total_message)
-        utils.output_file(self.handlers, total_message)
-
+        utils.output_file(self.callback_list, total_message)
 
 
 class PrintLogger(Logger):
