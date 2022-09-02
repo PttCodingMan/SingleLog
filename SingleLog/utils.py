@@ -36,7 +36,7 @@ def output_screen(total_message: str) -> None:
             total_message = total_message.encode("utf-16", 'surrogatepass').decode("utf-16", "surrogatepass")
 
 
-def output_file(handlers: List[Callable], total_message: str) -> None:
+def callback(handlers: List[Callable], total_message: str) -> None:
     for i in range(2):
         try:
             for handler in handlers:

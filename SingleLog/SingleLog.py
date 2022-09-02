@@ -112,7 +112,7 @@ class Logger:
 
         self._logger_status = LoggerStatus.FINISH
         self._last_msg = None
-        self._stage_level = None
+        self._stage_loglevel = None
 
     def info(self, *msg):
         self._start(LogLevel.INFO, *msg)
@@ -128,13 +128,13 @@ class Logger:
 
         if last_logger and last_logger._logger_status == LoggerStatus.FINISH:
             # works like normal logger
-            self._start(self._stage_level if self._stage_level else LogLevel.INFO, *msg)
+            self._start(self._stage_loglevel if self._stage_loglevel else LogLevel.INFO, *msg)
             return
         if self._logger_status == LoggerStatus.FINISH:
-            self._start(self._stage_level if self._stage_level else LogLevel.INFO, *msg)
+            self._start(self._stage_loglevel if self._stage_loglevel else LogLevel.INFO, *msg)
             return
 
-        self._stage(self._stage_level, *msg)
+        self._stage(self._stage_loglevel, *msg)
 
     def _print(self, *args, **kwargs):
         with global_lock:
@@ -190,7 +190,7 @@ class Logger:
         total_message = f' {self._stage_sep} {color}{BOLD}{message}'
 
         utils.output_screen(total_message)
-        utils.output_file(self._callback_list, total_message)
+        utils.callback(self._callback_list, total_message)
 
         global last_logger
         last_logger = self
@@ -233,7 +233,7 @@ class Logger:
             last_logger = self
 
             self._logger_status = LoggerStatus.STAGE
-            self._stage_level = log_level
+            self._stage_loglevel = log_level
 
             return True
 
@@ -241,7 +241,7 @@ class Logger:
         old_print()
         if last_logger is not self:
             last_logger._logger_status = LoggerStatus.FINISH
-            last_logger._stage_level = None
+            last_logger._stage_loglevel = None
         self._stage_count = 0
 
     def _add_newline(self):
@@ -255,7 +255,6 @@ class Logger:
             if self._logger_status == LoggerStatus.START:
                 # if the _logger_status is start, it means we need to check the _logger_status of last logger
                 # note: last logger could be self
-
                 if last_logger._logger_status != LoggerStatus.FINISH:
                     # if self or last logger is not finish, add newline
                     self.__add_newline()
@@ -272,7 +271,7 @@ class Logger:
             return
 
         utils.output_screen(total_message)
-        utils.output_file(self._callback_list, total_message)
+        utils.callback(self._callback_list, total_message)
 
 
 class PrintLogger(Logger):
@@ -280,4 +279,4 @@ class PrintLogger(Logger):
         self._print(*args, **kwargs)
 
 
-print_logger = PrintLogger(log_name='', timestamp=None)
+print_logger = PrintLogger(log_name='', timestamp='')
