@@ -125,15 +125,16 @@ class Logger:
 
     def _start_check(self, log_level: LogLevel, *msg):
 
-        # old_print(f'start {self.status}', end='')
-        if self.status != LoggerStatus.FINISH:
-            self.check_add_new_line = True
-        self.status = LoggerStatus.START
-        if self._start(log_level, *msg):
-            self.status = LoggerStatus.STAGE
-            self._do_level = log_level
-        elif not self.check_add_new_line:
-            self.status = LoggerStatus.FINISH
+        with global_lock:
+            # old_print(f'start {self.status}', end='')
+            if self.status != LoggerStatus.FINISH:
+                self.check_add_new_line = True
+            self.status = LoggerStatus.START
+            if self._start(log_level, *msg):
+                self.status = LoggerStatus.STAGE
+                self._do_level = log_level
+            elif not self.check_add_new_line:
+                self.status = LoggerStatus.FINISH
 
     def stage(self, *msg):
         # its log level is the same as the last do_level
@@ -146,9 +147,11 @@ class Logger:
             raise Exception(f'Unknown log status {self.status}')
 
     def _print(self, *args, **kwargs):
-        self.status = LoggerStatus.PRINT
-        self._lock_area(None, *args, **kwargs)
-        self.status = LoggerStatus.FINISH
+        with global_lock:
+            self.status = LoggerStatus.PRINT
+            self._lock_area(None, *args, **kwargs)
+            self.status = LoggerStatus.FINISH
+
 
     def _check_log_level(self, log_level: LogLevel) -> bool:
         # check the msg will be output or not
@@ -240,38 +243,35 @@ class Logger:
             # if the last stage is stage, don't need to lock
             raise Exception('Cannot print in stage status')
 
-        with global_lock:
+        global is_first_print
+        global last_logger
 
-            global is_first_print
-            global last_logger
-
-            if is_first_print:
-                is_first_print = False
-            else:
-                if self.status == LoggerStatus.START:
-                    # if the status is start, it means we need to check the status of last logger
-                    # note: last logger could be self
-                    if last_logger.status != LoggerStatus.FINISH:
-                        # if self or last logger is not finish, add newline
-                        self._add_newline()
-                elif self.status == LoggerStatus.PRINT:
-                    if self is not last_logger:
-                        # if self is not last logger, add newline
-                        self._add_newline()
-                    self.check_add_new_line = False
-                else:
-                    self.check_add_new_line = False
+        if is_first_print:
+            is_first_print = False
+        else:
+            if self.status == LoggerStatus.START:
+                # if the status is start, it means we need to check the status of last logger
+                # note: last logger could be self
+                if last_logger.status != LoggerStatus.FINISH:
+                    # if self or last logger is not finish, add newline
                     self._add_newline()
+            elif self.status == LoggerStatus.PRINT:
+                if self is not last_logger:
+                    # if self is not last logger, add newline
+                    self._add_newline()
+                self.check_add_new_line = False
+            else:
+                self.check_add_new_line = False
+                self._add_newline()
 
-            last_logger = self
-            if self.status == LoggerStatus.PRINT:
-                old_print(*args, **kwargs)
-                return True
-
-            utils.output_screen(total_message)
-            utils.output_file(self.handlers, total_message)
-
+        last_logger = self
+        if self.status == LoggerStatus.PRINT:
+            old_print(*args, **kwargs)
             return True
+
+        utils.output_screen(total_message)
+        utils.output_file(self.handlers, total_message)
+
 
 
 class PrintLogger(Logger):
