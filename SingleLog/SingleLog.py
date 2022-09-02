@@ -165,7 +165,7 @@ class Logger:
             return
 
         if self._logger_status not in [LoggerStatus.STAGE, LoggerStatus.START]:
-            raise Exception(f'Unknown log _logger_status {self._logger_status}')
+            raise Exception(f'Unknown log logger_status {self._logger_status}')
 
         message = str(msg)
         if self._skip_repeat:
@@ -195,11 +195,11 @@ class Logger:
         global last_logger
         last_logger = self
 
-    def _start(self, log_level: LogLevel, *msg) -> bool:
+    def _start(self, log_level: LogLevel, *msg):
 
         with global_lock:
             if not self._check_log_level(log_level):
-                return False
+                return
 
             self._logger_status = LoggerStatus.START
 
@@ -212,7 +212,7 @@ class Logger:
 
             if self._skip_repeat:
                 if self._last_msg == message:
-                    return False
+                    return
                 self._last_msg = message
 
             location = ''
@@ -235,7 +235,7 @@ class Logger:
             self._logger_status = LoggerStatus.STAGE
             self._stage_loglevel = log_level
 
-            return True
+            return
 
     def __add_newline(self) -> None:
         old_print()
@@ -248,12 +248,12 @@ class Logger:
 
         if self._logger_status == LoggerStatus.STAGE:
             # if the last stage is stage, don't need to lock
-            raise Exception('Cannot print in stage _logger_status')
+            raise Exception('Cannot print in stage logger_status')
 
         global last_logger
         if last_logger:
             if self._logger_status == LoggerStatus.START:
-                # if the _logger_status is start, it means we need to check the _logger_status of last logger
+                # if the logger_status is start, it means we need to check the logger_status of last logger
                 # note: last logger could be self
                 if last_logger._logger_status != LoggerStatus.FINISH:
                     # if self or last logger is not finish, add newline
