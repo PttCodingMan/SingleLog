@@ -61,47 +61,47 @@ class Logger:
         """
         :param log_name: the display name of current logger.
         :param log_level: (Optional) (Default: Logger.INFO)the log level of current logger.
-        :param callback: (Optional) the callback_list of current logger. you can get the output msg from the callback_list.
+        :param callback: (Optional) the _callback_list of current logger. you can get the output msg from the _callback_list.
         :param skip_repeat: (Optional) if True, the current logger will skip the repeat msg.
-        :param timestamp: (Optional) the timestamp format of current logger.
+        :param timestamp: (Optional) the _timestamp format of current logger.
         :param stage_sep: (Optional) the separator of stage.
         :param key_word_success: (Optional) the key words of success.
         :param key_word_fails: (Optional) the key words of fails.
         :param stage_color_list: (Optional) the color list of stage.
         """
 
-        self.log_name = log_name
-        if not self.log_name:
-            self.log_name = ''
+        self._log_name = log_name
+        if not self._log_name:
+            self._log_name = ''
         else:
-            self.log_name = f'[{self.log_name}]'
+            self._log_name = f'[{self._log_name}]'
 
         if not isinstance(log_level, LogLevel):
             raise TypeError(f'Error log level type: {type(log_level)}')
 
-        self.log_level = log_level
+        self._log_level = log_level
 
-        self.callback_list = []
+        self._callback_list = []
         if callback is not None:
             if not isinstance(callback, list):
                 callback = [callback]
             for h in callback:
                 if not callable(h):
                     raise TypeError('callback must be callable!!')
-            self.callback_list = callback
+            self._callback_list = callback
 
-        self.skip_repeat = skip_repeat
-        self.timestamp = timestamp
+        self._skip_repeat = skip_repeat
+        self._timestamp = timestamp
 
-        self.stage_sep = stage_sep
+        self._stage_sep = stage_sep
 
         if key_word_success is None:
             key_word_success = default_key_word_success
-        self.key_word_success = key_word_success
+        self._key_word_success = key_word_success
 
         if key_word_fails is None:
             key_word_fails = default_key_word_fails
-        self.key_word_fails = key_word_fails
+        self._key_word_fails = key_word_fails
 
         self._stage_count = 0
 
@@ -162,7 +162,7 @@ class Logger:
         if not log_level:
             raise ValueError('log_level must be set!!')
 
-        if self.log_level > log_level:
+        if self._log_level > log_level:
             return False
 
         return True
@@ -175,17 +175,17 @@ class Logger:
             raise Exception(f'Unknown log _logger_status {self._logger_status}')
 
         message = str(msg)
-        if self.skip_repeat:
+        if self._skip_repeat:
             self._last_msg = message
 
         color = ''
-        for s in self.key_word_success:
+        for s in self._key_word_success:
             if s in message.lower():
                 color = Fore.GREEN
                 break
 
         if not color:
-            for s in self.key_word_fails:
+            for s in self._key_word_fails:
                 if s in message.lower():
                     color = Fore.RED
                     break
@@ -194,10 +194,10 @@ class Logger:
             color = self._stage_color_list[self._stage_count]
             self._stage_count = (self._stage_count + 1) % len(self._stage_color_list)
 
-        total_message = f' {self.stage_sep} {color}{BOLD}{message}'
+        total_message = f' {self._stage_sep} {color}{BOLD}{message}'
 
         utils.output_screen(total_message)
-        utils.output_file(self.callback_list, total_message)
+        utils.output_file(self._callback_list, total_message)
 
         global last_logger
         last_logger = self
@@ -216,21 +216,21 @@ class Logger:
         for m in msg[1:]:
             message = f'{message} {merge_msg(m)}'
 
-        if self.skip_repeat:
+        if self._skip_repeat:
             if self._last_msg == message:
                 return False
             self._last_msg = message
 
         location = ''
-        if self.log_level <= LogLevel.DEBUG:
+        if self._log_level <= LogLevel.DEBUG:
             cf = inspect.currentframe()
             line_no = cf.f_back.f_back.f_lineno
             file_name = cf.f_back.f_back.f_code.co_filename
             file_name = os.path.basename(file_name)
             location = f'[{file_name} {line_no}]'
 
-        timestamp = f'[{strftime(self.timestamp)}]' if self.timestamp else ''
-        total_message = f'{timestamp}{self.log_name}{location} {message}'.strip()
+        timestamp = f'[{strftime(self._timestamp)}]' if self._timestamp else ''
+        total_message = f'{timestamp}{self._log_name}{location} {message}'.strip()
 
         self._add_newline()
         self._output(total_message)
@@ -274,7 +274,7 @@ class Logger:
             return
 
         utils.output_screen(total_message)
-        utils.output_file(self.callback_list, total_message)
+        utils.output_file(self._callback_list, total_message)
 
 
 class PrintLogger(Logger):
