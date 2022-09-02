@@ -116,5 +116,5 @@ def test_first_test():
 
 
 if __name__ == '__main__':
-    # test_first_test()
-    test_func()
+    test_first_test()
+    # test_func()

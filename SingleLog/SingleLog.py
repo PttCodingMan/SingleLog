@@ -112,7 +112,6 @@ class Logger:
         self.status = LoggerStatus.FINISH
         self._last_msg = None
         self._stage_level = None
-        self.check_add_new_line = False
 
     def info(self, *msg):
         self._start_check(LogLevel.INFO, *msg)
@@ -129,7 +128,7 @@ class Logger:
             if self._start(log_level, *msg):
                 self.status = LoggerStatus.STAGE
                 self._stage_level = log_level
-            elif not self.check_add_new_line:
+            else:
                 self.status = LoggerStatus.FINISH
 
     def stage(self, *msg):
@@ -203,9 +202,6 @@ class Logger:
         if not self._check_log_level(log_level):
             return False
 
-        if self.status != LoggerStatus.FINISH:
-            self.check_add_new_line = True
-
         self.status = LoggerStatus.START
 
         if not msg:
@@ -267,9 +263,7 @@ class Logger:
                 if self is not last_logger:
                     # if self is not last logger, add newline
                     self.__add_newline()
-                self.check_add_new_line = False
             else:
-                self.check_add_new_line = False
                 self.__add_newline()
 
     def _output(self, total_message: [str | None], *args, **kwargs) -> None:
