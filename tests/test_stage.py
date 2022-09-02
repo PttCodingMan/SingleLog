@@ -40,7 +40,7 @@ def test_stage_2():
     logger.stage('success')
 
     logger.info('start')
-    for i in range(3, 20):
+    for i in range(1, 8):
         logger.info('start', i)
         for ii in range(i):
             logger.stage(ii)
@@ -66,4 +66,6 @@ def test_stage_3():
 
 
 if __name__ == '__main__':
-    test_stage()
+    # test_stage()
+    # test_stage_2()
+    test_stage_3()

@@ -108,9 +108,12 @@ def test_first_test():
         for api in api_test:
             if api == 'print':
                 print(f'test-{i} print')
+                print(f'test-{i} print')
             if api == 'info':
                 logger.info('info')
+                logger.info('info')
             if api == 'stage':
+                logger.stage(f'test-{i} stage')
                 logger.stage(f'test-{i} stage')
 
 

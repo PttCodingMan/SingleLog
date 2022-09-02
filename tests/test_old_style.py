@@ -96,14 +96,14 @@ def test_old():
 
     def thread_log(thread_id):
         current_logger = Logger(f'logger-{thread_id}')
-        for i in range(1000):
+        for i in range(10):
             current_logger.info('show', i)
 
     thread_list = list()
     for i in range(100):
         t = threading.Thread(target=thread_log, args=(i,))
-        thread_list.append(t)
         t.start()
+        thread_list.append(t)
 
     for t in thread_list:
         t.join()
