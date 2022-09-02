@@ -14,7 +14,7 @@ def test_do():
         with open('./single_log_2.txt', 'a', encoding='utf-8') as f:
             f.write(f'{msg}\n')
 
-    logger = Logger('INFO', handler=[log_to_file, log_to_file2])
+    logger = Logger('INFO', callback=[log_to_file, log_to_file2])
 
     logger.info('1')
     logger.info(2)

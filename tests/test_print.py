@@ -97,6 +97,8 @@ def test_func():
 
 def test_first_test():
 
+    from SingleLog import SingleLog
+
     api_list = [
         'print',
         'info',
@@ -104,6 +106,7 @@ def test_first_test():
     ]
 
     for i, api_test in enumerate(permutations(api_list)):
+        SingleLog.last_logger = None
         logger = Logger(f'test-{i}')
         for api in api_test:
             if api == 'print':
@@ -115,6 +118,8 @@ def test_first_test():
             if api == 'stage':
                 logger.stage(f'test-{i} stage')
                 logger.stage(f'test-{i} stage')
+
+        print('=' * 20)
 
 
 

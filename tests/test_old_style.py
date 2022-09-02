@@ -1,3 +1,5 @@
+import sys
+
 from SingleLog.log import Logger
 
 
@@ -91,22 +93,6 @@ def test_old():
     logger.info('1')
     logger.info(2)
     logger.info('show value', 456)
-
-    import threading
-
-    def thread_log(thread_id):
-        current_logger = Logger(f'logger-{thread_id}')
-        for i in range(10):
-            current_logger.info('show', i)
-
-    thread_list = list()
-    for i in range(100):
-        t = threading.Thread(target=thread_log, args=(i,))
-        t.start()
-        thread_list.append(t)
-
-    for t in thread_list:
-        t.join()
 
 
 if __name__ == '__main__':
