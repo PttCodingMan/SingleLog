@@ -124,17 +124,23 @@ class Logger:
         self._start(LogLevel.TRACE, *msg)
 
     def stage(self, *msg):
-        # its log level is the same as the last do_level
+        # the stage msg will be output in the same line
+        # the stage effect works on LogLevel.INFO and the last logger is not FINISH
+
+        if self._log_level != LogLevel.INFO:
+            self._start(self._log_level, *msg)
+            return
 
         if last_logger and last_logger._logger_status == LoggerStatus.FINISH:
             # works like normal logger
-            self._start(self._stage_loglevel if self._stage_loglevel else LogLevel.INFO, *msg)
-            return
-        if self._logger_status == LoggerStatus.FINISH:
-            self._start(self._stage_loglevel if self._stage_loglevel else LogLevel.INFO, *msg)
+            self._start(LogLevel.INFO, *msg)
             return
 
-        self._stage(self._stage_loglevel, *msg)
+        if self._logger_status == LoggerStatus.FINISH:
+            self._start(LogLevel.INFO, *msg)
+            return
+
+        self._stage(LogLevel.INFO, *msg)
 
     def _print(self, *args, **kwargs):
         with global_lock:
