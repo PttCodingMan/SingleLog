@@ -11,8 +11,10 @@
 ## Quick View
 
 ### Stage Method
-You can use stage method to display the log step by step.  
+You can use `stage` method to display the log step by step in the same line.  
 And don't need to worry about the default print function will print the log in the same line.
+
+> Note that the stage effect only works on LogLevel.INFO.
 
 ```python
 import time
