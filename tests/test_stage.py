@@ -65,7 +65,29 @@ def test_stage_3():
         logger.debug('end')
 
 
+def test_stage_4():
+    loglevels = [
+        LogLevel.INFO,
+        LogLevel.DEBUG,
+    ]
+
+    for loglevel in loglevels:
+        logger = Logger('demo', loglevel)
+
+        logger.info('do something')
+        logger.stage(1)
+        logger.debug(1.1)
+        logger.stage(2)
+        logger.debug(2.5)
+        logger.stage(3)
+        logger.debug(3.6)
+        logger.stage(4)
+
+        logger.info('===================')
+
+
 if __name__ == '__main__':
     # test_stage()
     # test_stage_2()
-    test_stage_3()
+    # test_stage_3()
+    test_stage_4()
