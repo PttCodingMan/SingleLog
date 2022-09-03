@@ -112,7 +112,6 @@ class Logger:
 
         self._logger_status = LoggerStatus.FINISH
         self._last_msg = None
-        self._stage_loglevel = None
 
     def info(self, *msg):
         self._start(LogLevel.INFO, *msg)
@@ -239,7 +238,6 @@ class Logger:
             last_logger = self
 
             self._logger_status = LoggerStatus.STAGE
-            self._stage_loglevel = log_level
 
             return
 
@@ -247,7 +245,6 @@ class Logger:
         old_print()
         if last_logger is not self:
             last_logger._logger_status = LoggerStatus.FINISH
-            last_logger._stage_loglevel = None
         self._stage_count = 0
 
     def _add_newline(self):
