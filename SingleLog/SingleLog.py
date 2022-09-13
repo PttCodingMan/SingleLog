@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import builtins
 import inspect
 import os
@@ -47,6 +48,12 @@ def new_print(*args, **kwargs):
 
 
 builtins.print = new_print
+
+
+@atexit.register
+def process_exit():
+    old_print(' ')
+
 
 BOLD = '\033[1m'
 
