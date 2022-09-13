@@ -1,3 +1,4 @@
+import logging
 import sys
 from itertools import permutations
 
@@ -94,6 +95,9 @@ def test_func():
     logger = Logger()
     logger.info('default logger print')
 
+    print('=' * 20)
+    logger.info('Twitter already post today')
+
 
 def test_first_test():
 
@@ -122,7 +126,21 @@ def test_first_test():
         print('=' * 20)
 
 
+def test_error_new_line():
+
+    logger = Logger('test_error_new_line')
+    Logger('1').info('hi')
+    Logger('2').info('hi')
+    Logger('3').info('hi')
+
+
 
 if __name__ == '__main__':
     # test_first_test()
-    test_func()
+    # test_func()
+    # test_error_new_line()
+
+    logger = Logger('test')
+    logger.info('hi')
+
+    # print('hi')
