@@ -136,11 +136,11 @@ def test_error_new_line():
 
 
 if __name__ == '__main__':
-    # test_first_test()
+    test_first_test()
     # test_func()
     # test_error_new_line()
 
-    logger = Logger('test')
-    logger.info('hi')
+    # logger = Logger('test')
+    # logger.info('hi')
 
     # print('hi')
