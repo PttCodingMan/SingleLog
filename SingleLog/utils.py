@@ -7,26 +7,25 @@ old_print = builtins.print
 
 
 def merge_msg(msg, frame: bool = True) -> str:
-    catch_error = False
-    if isinstance(msg, (list, dict, tuple)):
+    if not isinstance(msg, str):
+
+        is_tuple = isinstance(msg, tuple)
         try:
             msg = f'{json.dumps(msg, indent=2, ensure_ascii=False)}'
+            dump_msg = True
         except:
-            catch_error = True
+            dump_msg = False
 
-        if catch_error:
+        if not dump_msg:
             msg = f'{msg}'
-        elif isinstance(msg, tuple):
+
+        if is_tuple:
             msg = msg[1:-1]
             if frame:
                 msg = f'({msg})'
 
-    else:
-        if not isinstance(msg, str):
-            msg = str(msg)
-
-        if frame:
-            msg = f'[{msg}]'
+    elif frame:
+        msg = f'[{msg}]'
 
     return msg
 

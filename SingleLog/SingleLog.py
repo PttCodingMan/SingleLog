@@ -21,10 +21,13 @@ global_lock = threading.Lock()
 
 
 class LogLevel(IntEnum):
+    # more log
     TRACE = 1
     DEBUG = 2
     INFO = 3
-    SILENT = 4
+    ERROR = 4
+    SILENT = 5
+    # less log
 
 
 class LoggerStatus(AutoStrEnum):
