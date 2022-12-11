@@ -25,8 +25,9 @@ class LogLevel(IntEnum):
     TRACE = 1
     DEBUG = 2
     INFO = 3
-    ERROR = 4
-    SILENT = 5
+    WARN = 4
+    ERROR = 5
+    SILENT = 7
     # less log
 
 
@@ -122,6 +123,12 @@ class Logger:
 
         self._logger_status = LoggerStatus.FINISH
         self._last_msg = None
+
+    def error(self, *msg):
+        self._start(LogLevel.ERROR, *msg)
+
+    def warn(self, *msg):
+        self._start(LogLevel.WARN, *msg)
 
     def info(self, *msg):
         self._start(LogLevel.INFO, *msg)
@@ -222,8 +229,19 @@ class Logger:
                 msg = ' '
 
             message = f'{merge_msg(msg[0], frame=False)}'
+
+            color = ''
+            if log_level == LogLevel.WARN:
+                color = Fore.YELLOW
+            elif log_level == LogLevel.ERROR:
+                color = Fore.RED
+
+            bold = BOLD if color != '' else ''
+
             for m in msg[1:]:
-                message = f'{message} {merge_msg(m)}'
+                message = f'{color}{bold}{message} {merge_msg(m)}'
+            else:
+                message = f'{color}{bold}{message}'
 
             if self._skip_repeat:
                 if self._last_msg == message:
