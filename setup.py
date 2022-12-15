@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='SingleLog',  # Required
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='2.0.14',
+    version='2.0.15',
 
     description=open('README.md', encoding="utf-8").read(),
     description_content_type='text/markdown',
@@ -23,6 +23,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
 
     keywords=['log', 'logger', 'library'],

@@ -1,4 +1,3 @@
-import atexit
 import builtins
 import json
 from typing import List, Callable
@@ -7,9 +6,20 @@ old_print = builtins.print
 
 
 def merge_msg(msg, frame: bool = True) -> str:
+    if msg is None:
+        return 'null'
+
     if not isinstance(msg, str):
 
+        is_bool = isinstance(msg, bool)
+        if is_bool:
+            return 'true' if msg else 'false'
+
         is_tuple = isinstance(msg, tuple)
+        is_set = isinstance(msg, set)
+        if is_tuple or is_set:
+            msg = list(msg)
+
         try:
             msg = f'{json.dumps(msg, indent=2, ensure_ascii=False)}'
             dump_msg = True
@@ -19,10 +29,13 @@ def merge_msg(msg, frame: bool = True) -> str:
         if not dump_msg:
             msg = f'{msg}'
 
-        if is_tuple:
+        if is_tuple or is_set:
             msg = msg[1:-1]
             if frame:
-                msg = f'({msg})'
+                if is_tuple:
+                    msg = f'({msg})'
+                elif is_set:
+                    msg = f'{{{msg}}}'
 
     elif frame:
         msg = f'[{msg}]'

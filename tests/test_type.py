@@ -11,6 +11,7 @@ if __name__ == '__main__':
     logger.info('tuple', (1, 2, 3))
     logger.info('set', {1, 2, 3})
     logger.info('bool', True)
+    logger.info('bool list', [True, True, False])
     logger.info('None', None)
     logger.info('function', print)
     logger.info('class', Logger)
