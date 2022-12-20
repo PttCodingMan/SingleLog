@@ -7,7 +7,7 @@ import logging
 import os
 import threading
 import uuid
-from enum import IntEnum, auto
+from enum import auto, IntEnum
 from time import strftime
 from typing import Callable, List, Optional
 
@@ -24,12 +24,14 @@ global_lock = threading.Lock()
 
 class LogLevel(IntEnum):
     # more log
-    TRACE = 1
-    DEBUG = 2
-    INFO = 3
-    WARN = 4
-    ERROR = 5
-    SILENT = 7
+    TRACE = logging.DEBUG - 1
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARN = logging.WARN
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+    SILENT = logging.CRITICAL + 1
+
     # less log
 
 
@@ -366,8 +368,6 @@ class DefaultLogger:
         self.logger = logging.getLogger(get_uuid())
         self.logger.setLevel(level)
 
-        # Define format for logs
-
         # Create stdout handler for logging to the console (logs all five levels)
         stdout_handler = logging.StreamHandler()
         stdout_handler.setLevel(level)
@@ -390,45 +390,26 @@ class DefaultLogger:
 
         return message
 
-    def info(self, *msg):
-
+    def _output(self, logger_func, msg):
         message = self._convert(msg)
-        self.logger.info(message)
-
+        logger_func(message)
         for handler in self.handlers:
             handler(message)
+
+    def info(self, *msg):
+        self._output(self.logger.info, msg)
 
     def debug(self, *msg):
-        message = self._convert(msg)
-        self.logger.debug(message)
-
-        for handler in self.handlers:
-            handler(message)
+        self._output(self.logger.debug, msg)
 
     def trace(self, *msg):
-        message = self._convert(msg)
-        self.logger.debug(message)
-
-        for handler in self.handlers:
-            handler(message)
+        self._output(self.logger.debug, msg)
 
     def warning(self, *msg):
-        message = self._convert(msg)
-        self.logger.warning(message)
-
-        for handler in self.handlers:
-            handler(message)
+        self._output(self.logger.warning, msg)
 
     def error(self, *msg):
-        message = self._convert(msg)
-        self.logger.error(message)
-
-        for handler in self.handlers:
-            handler(message)
+        self._output(self.logger.error, msg)
 
     def critical(self, *msg):
-        message = self._convert(msg)
-        self.logger.critical(message)
-
-        for handler in self.handlers:
-            handler(message)
+        self._output(self.logger.critical, msg)
