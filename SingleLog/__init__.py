@@ -1,4 +1,4 @@
 from . import log as log
 
 from .SingleLog import LogLevel
-from .SingleLog import Logger
+from .SingleLog import Logger, DefaultLogger

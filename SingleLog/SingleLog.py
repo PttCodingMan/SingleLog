@@ -3,11 +3,13 @@ from __future__ import annotations
 import atexit
 import builtins
 import inspect
+import logging
 import os
 import threading
+import uuid
 from enum import IntEnum, auto
 from time import strftime
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from AutoStrEnum import AutoStrEnum
 from colorama import init, Fore
@@ -311,3 +313,122 @@ class PrintLogger(Logger):
 
 
 print_logger = PrintLogger(log_name='', timestamp='')
+
+
+########################################################################################################################
+
+class CustomFormatter(logging.Formatter):
+    """Logging colored formatter, adapted from https://stackoverflow.com/a/56944256/3638629"""
+
+    grey = "\x1b[0;37m"
+    white = '\x1b[2m'
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+
+    def __init__(self, name):
+        super().__init__()
+        # self.fmt = '[%(asctime)s][%(levelname)s] %(message)s'
+        self.fmt = f'[%(asctime)s][{name}] %(message)s'
+        self.datefmt = '%m.%d %H:%M:%S'
+        self.FORMATS = {
+            logging.DEBUG: self.grey + self.fmt + self.reset,
+            logging.INFO: self.white + self.fmt + self.reset,
+            logging.WARNING: self.yellow + self.fmt + self.reset,
+            logging.ERROR: self.red + self.fmt + self.reset,
+            logging.CRITICAL: self.bold_red + self.fmt + self.reset
+        }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+
+        # global current_color
+        # log_fmt = f"\x1b[{current_color}m" + self.fmt + self.reset
+
+        formatter = logging.Formatter(log_fmt, self.datefmt)
+        return formatter.format(record)
+
+
+uuid_pool = set()
+
+
+def get_uuid():
+    while True:
+        new_id = str(uuid.uuid4())
+        if new_id not in uuid_pool:
+            uuid_pool.add(new_id)
+            return new_id
+
+
+class DefaultLogger:
+    def __init__(self, name, level=LogLevel.INFO, handler: Optional[list] = []):
+        self.logger = logging.getLogger(get_uuid())
+        self.logger.setLevel(level)
+
+        # Define format for logs
+
+        # Create stdout handler for logging to the console (logs all five levels)
+        stdout_handler = logging.StreamHandler()
+        stdout_handler.setLevel(level)
+        stdout_handler.setFormatter(CustomFormatter(name))
+
+        # Add handlers to the logger
+        self.logger.addHandler(stdout_handler)
+
+        self.handlers = []
+        if handler is not None:
+            if not isinstance(handler, list):
+                handler = [handler]
+            self.handlers = handler
+
+    def _convert(self, msg):
+        message = f'{merge_msg(msg[0], frame=False)}'
+
+        for m in msg[1:]:
+            message = f'{message} {merge_msg(m)}'
+
+        return message
+
+    def info(self, *msg):
+
+        message = self._convert(msg)
+        self.logger.info(message)
+
+        for handler in self.handlers:
+            handler(message)
+
+    def debug(self, *msg):
+        message = self._convert(msg)
+        self.logger.debug(message)
+
+        for handler in self.handlers:
+            handler(message)
+
+    def trace(self, *msg):
+        message = self._convert(msg)
+        self.logger.debug(message)
+
+        for handler in self.handlers:
+            handler(message)
+
+    def warning(self, *msg):
+        message = self._convert(msg)
+        self.logger.warning(message)
+
+        for handler in self.handlers:
+            handler(message)
+
+    def error(self, *msg):
+        message = self._convert(msg)
+        self.logger.error(message)
+
+        for handler in self.handlers:
+            handler(message)
+
+    def critical(self, *msg):
+        message = self._convert(msg)
+        self.logger.critical(message)
+
+        for handler in self.handlers:
+            handler(message)

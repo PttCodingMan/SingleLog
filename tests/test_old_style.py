@@ -1,10 +1,11 @@
 import sys
 
-from SingleLog.log import Logger
+from SingleLog import DefaultLogger, Logger
 
 
 def test_old():
-    logger = Logger('demo')
+    # logger = Logger('demo')
+    logger = DefaultLogger('demo')
 
     logger.info('type', type(''))
 
