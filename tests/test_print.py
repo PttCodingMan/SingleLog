@@ -1,4 +1,3 @@
-import logging
 import sys
 from itertools import permutations
 
@@ -100,7 +99,6 @@ def test_func():
 
 
 def test_first_test():
-
     from SingleLog import SingleLog
 
     api_list = [
@@ -127,12 +125,10 @@ def test_first_test():
 
 
 def test_error_new_line():
-
     logger = Logger('test_error_new_line')
     Logger('1').info('hi')
     Logger('2').info('hi')
     Logger('3').info('hi')
-
 
 
 if __name__ == '__main__':

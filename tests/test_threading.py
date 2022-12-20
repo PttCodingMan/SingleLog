@@ -1,6 +1,5 @@
 import sys
 import threading
-import time
 
 sys.path.insert(0, '../')
 
@@ -41,8 +40,6 @@ def test_threading_with_print():
 
 
 if __name__ == '__main__':
-    import SingleLog
-
     # print(len(SingleLog.SingleLog.enable_loggers))
     test_threading_with_print()
     # print(len(SingleLog.SingleLog.enable_loggers))

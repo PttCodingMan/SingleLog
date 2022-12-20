@@ -47,7 +47,6 @@ def test_stage_2():
 
 
 def test_stage_3():
-
     loglevels = [
         LogLevel.INFO,
         LogLevel.DEBUG,

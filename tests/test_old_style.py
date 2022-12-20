@@ -1,11 +1,12 @@
 import sys
 
-from SingleLog import DefaultLogger, Logger
+sys.path.insert(0, '../')
+
+from SingleLog.log import Logger
 
 
 def test_old():
-    # logger = Logger('demo')
-    logger = DefaultLogger('demo')
+    logger = Logger('demo')
 
     logger.info('type', type(''))
 

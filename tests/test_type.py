@@ -16,4 +16,3 @@ if __name__ == '__main__':
     logger.info('function', print)
     logger.info('class', Logger)
     logger.info('object', logger)
-
