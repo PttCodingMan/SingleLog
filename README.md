@@ -8,6 +8,8 @@
 ### It can format your data and output it to the console or file.
 ### It can also log your event status step by step.
 
+### Note: If you have problems while using SingleLog and other libraries, you can try `DefalutLogger` instead of `SingleLogger`.
+
 ## Quick View
 
 ### Stage Method

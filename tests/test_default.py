@@ -1,6 +1,7 @@
 from SingleLog import DefaultLogger
 
-if __name__ == '__main__':
+
+def test_default():
     logger = DefaultLogger('test')
 
     logger.info('123', '456')
@@ -8,3 +9,6 @@ if __name__ == '__main__':
     logger.info('123', '456', '789')
 
     logger.info('test', [1, 3, 4, 5, 6, 7, 8, 9, 0])
+
+if __name__ == '__main__':
+    test_default()
